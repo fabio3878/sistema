@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <UserSecretsId>dotnet-AgenteLocal-39fc2a85-86e8-4b96-8f3e-311bab0b8e15</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+    <PackageReference Include="WolverineFx" />
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
+    <PackageReference Include="WolverineFx.Sqlite" />
+    <PackageReference Include="WolverineFx.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modulos\Cadastros\Cadastros.Infraestrutura\Cadastros.Infraestrutura.csproj" />
+    <ProjectReference Include="..\..\Modulos\Cadastros\Cadastros.Contratos\Cadastros.Contratos.csproj" />
+    <ProjectReference Include="..\..\Plataforma\Plataforma.Infraestrutura\Plataforma.Infraestrutura.csproj" />
+    <ProjectReference Include="..\..\Compartilhado\BuildingBlocks\BuildingBlocks.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cadastros.Aplicacao\Cadastros.Aplicacao.csproj" />
+    <ProjectReference Include="..\Cadastros.Dominio\Cadastros.Dominio.csproj" />
+    <ProjectReference Include="..\Cadastros.Contratos\Cadastros.Contratos.csproj" />
+    <ProjectReference Include="..\..\..\Compartilhado\BuildingBlocks\BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\..\Plataforma\Plataforma.Aplicacao\Plataforma.Aplicacao.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

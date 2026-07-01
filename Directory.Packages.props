@@ -1,0 +1,38 @@
+<Project>
+
+  <!-- Central Package Management: TODAS as versões de pacote ficam aqui.
+       Os .csproj referenciam sem Version=. Um lugar só para versionar. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Núcleo / utilitários -->
+    <PackageVersion Include="Ulid" Version="1.4.1" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.9" />
+
+    <!-- EF Core 10 (banco local SQLite; provider trocável para Postgres depois) -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9" />
+
+    <!-- Bus in-process + Outbox durável -->
+    <PackageVersion Include="WolverineFx" Version="6.16.0" />
+    <PackageVersion Include="WolverineFx.Sqlite" Version="6.16.0" />
+    <PackageVersion Include="WolverineFx.Http" Version="6.16.0" />
+    <!-- Compilador de código em runtime (Roslyn). O core do Wolverine 6 não embute mais. -->
+    <PackageVersion Include="WolverineFx.RuntimeCompilation" Version="6.16.0" />
+
+    <!-- Host -->
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
+
+    <!-- Testes -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="NetArchTest.Rules" Version="1.3.2" />
+  </ItemGroup>
+
+</Project>

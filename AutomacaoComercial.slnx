@@ -1,0 +1,25 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Compartilhado/">
+    <Project Path="src/Compartilhado/BuildingBlocks/BuildingBlocks.csproj" />
+  </Folder>
+  <Folder Name="/src/Hosts/">
+    <Project Path="src/Hosts/AgenteLocal/AgenteLocal.csproj" />
+  </Folder>
+  <Folder Name="/src/Modulos/" />
+  <Folder Name="/src/Modulos/Cadastros/">
+    <Project Path="src/Modulos/Cadastros/Cadastros.Aplicacao/Cadastros.Aplicacao.csproj" />
+    <Project Path="src/Modulos/Cadastros/Cadastros.Contratos/Cadastros.Contratos.csproj" />
+    <Project Path="src/Modulos/Cadastros/Cadastros.Dominio/Cadastros.Dominio.csproj" />
+    <Project Path="src/Modulos/Cadastros/Cadastros.Infraestrutura/Cadastros.Infraestrutura.csproj" />
+  </Folder>
+  <Folder Name="/src/Plataforma/">
+    <Project Path="src/Plataforma/Plataforma.Aplicacao/Plataforma.Aplicacao.csproj" />
+    <Project Path="src/Plataforma/Plataforma.Dominio/Plataforma.Dominio.csproj" />
+    <Project Path="src/Plataforma/Plataforma.Infraestrutura/Plataforma.Infraestrutura.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Arquitetura.Tests/Arquitetura.Tests.csproj" />
+    <Project Path="tests/Cadastros.Tests/Cadastros.Tests.csproj" />
+  </Folder>
+</Solution>

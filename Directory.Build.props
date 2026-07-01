@@ -1,0 +1,19 @@
+<Project>
+
+  <!-- Propriedades comuns a TODOS os projetos da solução.
+       Evita repetir TFM/Nullable/etc em cada .csproj (seção 12 da arquitetura). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- NU1902/NU1903: alertas de vulnerabilidade em dependências TRANSITIVAS
+         (ex.: SQLitePCLRaw, puxado pelo EF Core Sqlite). Ficam VISÍVEIS como warning,
+         mas não travam o build — não há versão corrigida para atualizar hoje.
+         Rever quando o EF Core publicar update. -->
+    <WarningsNotAsErrors>NU1902;NU1903</WarningsNotAsErrors>
+  </PropertyGroup>
+
+</Project>
