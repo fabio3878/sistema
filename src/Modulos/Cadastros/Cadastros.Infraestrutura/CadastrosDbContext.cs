@@ -36,8 +36,9 @@ public sealed class CadastrosDbContext(DbContextOptions<CadastrosDbContext> opti
             e.Property(p => p.Descricao).HasMaxLength(300).IsRequired();
             e.Property(p => p.CodigoBarras).HasMaxLength(60);
             e.Property(p => p.Ncm).HasMaxLength(8).IsRequired();
-            // decimal explícito — o SQLite tem tipagem frouxa; dinheiro precisa de precisão fixa.
-            e.Property(p => p.PrecoVenda).HasColumnType("decimal(18,4)");
+            // Precisão fixa para dinheiro, provider-neutra: cada provider escolhe seu tipo nativo
+            // (numeric no Postgres; no SQLite, de tipagem frouxa, força o mapeamento explícito).
+            e.Property(p => p.PrecoVenda).HasPrecision(18, 4);
             e.HasIndex(p => new { p.EmpresaId, p.Sku }).IsUnique();
         });
 

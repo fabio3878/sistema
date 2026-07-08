@@ -15,10 +15,10 @@ eventos, motor de sincronização, camada fiscal e ordem de implementação.
 | # | Decisão | Escolha | Porquê |
 |---|---------|---------|--------|
 | 1 | Estilo | **Modular monolith** | Módulos isolados (bounded contexts), 1 deploy. Microserviços seriam complexidade sem ganho nesta fase. |
-| 2 | Fonte da verdade | **Local-first** | O PDV grava SEMPRE no banco local primeiro. Rede nunca trava a venda. |
-| 3 | Banco local | **SQLite + EF Core** | In-process, arquivo único, ACID, zero admin. Roda no agente, no balcão. |
-| 4 | Banco central | **PostgreSQL** | Destino de sync para multi-loja/SaaS. Escrita concorrente, BI, consolidação. |
-| 5 | Sync | **Opcional por config** | `SyncMode = LocalOnly` ou `LocalComSync`. Mesmo código. |
+| 2 | Fonte da verdade | **Cliente-servidor (servidor da loja)** | Servidor na loja é a fonte única; vários caixas na LAN compartilham estoque/preços em tempo real (consistência de graça, sem sync intra-loja). |
+| 3 | Banco do servidor | **PostgreSQL + EF Core** | Escrita concorrente real (vários PDVs), robusto, mesmo provider da consolidação. É o banco principal. |
+| 4 | Contingência local (futuro) | **SQLite + EF Core (opcional por PDV)** | Ainda NÃO construída. Permite o caixa vender offline se o servidor/LAN cair. Provider trocável por config — mesmo código de módulo. |
+| 5 | Sync multi-loja | **Opcional por config** | `SyncMode = LocalOnly` ou `LocalComSync`, para consolidar lojas numa central. Mesmo código. |
 | 6 | Mensageria interna | **Wolverine (MIT)** | Bus in-process + **outbox nativo**. MediatR/MassTransit viraram comerciais em 2025. |
 | 7 | Camada fiscal | **API terceirizada** (PlugNotas/Focus) | Reforma Tributária 2026 + NFS-e nacional. Não construir comunicação com SEFAZ. |
 | 8 | Frente desktop | **Tauri 2 + React/TS** | Reusa stack web, leve. Alternativa: PWA, se offline curto bastar. |
@@ -327,7 +327,7 @@ Eventos são `record` imutáveis em `*.Contratos`. Nomeados no passado (fato oco
 Frente (PDV/Restaurante/...) monta a Venda e chama Vendas.Fechar()
         │
         ▼
-[Vendas]  grava Venda (SQLite, transação) ──► publica VendaFechada
+[Vendas]  grava Venda (Postgres do servidor da loja, transação) ──► publica VendaFechada
         │                                          │ (mesma transação via outbox)
         ├──────────────► [Estoque]  baixa itens ──► EstoqueBaixado
         │                            (ou EstoqueInsuficiente ► bloqueia/avisa)
@@ -378,13 +378,14 @@ restaurante, OS na oficina, leitura rápida no PDV), mas o fluxo da seção 7 é
 
 ## 9. Motor de sincronização
 
-Só ativo quando `SyncMode = LocalComSync`. Reusa o outbox do Wolverine.
+Só ativo quando `SyncMode = LocalComSync` (consolidação **multi-loja**; dentro de uma
+loja os caixas já compartilham o servidor, sem sync). Reusa o outbox do Wolverine.
 
 ```
-[SQLite local]  mutação ─► outbox (Wolverine, durável)
+[Postgres da loja]  mutação ─► outbox (Wolverine, durável)
                               │  worker de sync (quando online)
                               ▼
-                        push de deltas ─► [Api.Central] ─► [Postgres]
+                        push de deltas ─► [Api.Central] ─► [Postgres central]
                               ▲
                         pull de deltas ◄─ (preços, cadastros vindos da matriz)
 ```
@@ -412,21 +413,25 @@ do resultado → publica `NotaAutorizada`/`NotaRejeitada`.
 
 ## 11. Banco — providers EF Core
 
-Um `DbContext` por módulo (cada um dono das suas tabelas). Provider trocável:
+Um `DbContext` por módulo (cada um dono das suas tabelas). Provider escolhido **por
+configuração** (seção `Banco`), não hard-coded. A decisão mora num único helper
+(`AdicionarDbContextConfiguravel<T>` em `Plataforma.Infraestrutura`) + no outbox do Wolverine:
 
 ```csharp
-// AgenteLocal (local)
-services.AddDbContext<EstoqueDbContext>(o => o.UseSqlite(localConn));
+// Servidor da loja (principal) — appsettings "Banco": { "Provider": "Postgres" }
+services.AddDbContext<EstoqueDbContext>(o => o.UseNpgsql(conn));
 
-// Api.Central (central)
-services.AddDbContext<EstoqueDbContext>(o => o.UseNpgsql(centralConn));
+// Contingência local futura por PDV (opcional) — "Provider": "Sqlite"
+services.AddDbContext<EstoqueDbContext>(o => o.UseSqlite(localConn));
 ```
 
-Cuidados (denominador comum entre SQLite e Postgres):
+Cuidados (denominador comum entre Postgres e SQLite):
 - Não usar `jsonb`/arrays nativos do Postgres no modelo compartilhado.
 - `decimal` para dinheiro (cuidado com a tipagem frouxa do SQLite — mapear explícito).
 - `DateTimeOffset` em UTC sempre.
-- **Migrations por provider** (pastas separadas): o SQL gerado difere.
+- **Migrations por provider** (pastas/assemblies separadas): o SQL gerado difere. Hoje só
+  o **Postgres** tem migrations; a assembly de migrations do SQLite entra junto com a
+  contingência local, quando ela for construída.
 - Separação lógica por **prefixo de tabela ou schema** por módulo (`estoque_*`, `fin_*`).
 
 ---
@@ -437,9 +442,10 @@ Cuidados (denominador comum entre SQLite e Postgres):
 |--------|-----------|
 | Runtime | .NET 10 (LTS) — fallback .NET 9 |
 | ORM | EF Core 10 |
-| Bus + Outbox | Wolverine 4 (MIT) |
-| Banco local | SQLite |
-| Banco central | PostgreSQL 17 |
+| Bus + Outbox | Wolverine 6 (MIT) |
+| Banco do servidor da loja (principal) | PostgreSQL 17 |
+| Contingência local futura (por PDV) | SQLite |
+| Banco central (consolidação multi-loja) | PostgreSQL 17 |
 | Desktop | Tauri 2 + React 19 + TypeScript |
 | Back-office | Next.js (Cloudflare Pages/Workers) |
 | Fiscal | PlugNotas / Focus NFe (API) |
@@ -469,7 +475,8 @@ Cuidados (denominador comum entre SQLite e Postgres):
 ```markdown
 # Sistema de Automação Comercial
 
-Modular monolith local-first em .NET. Um produto, várias verticais (frentes).
+Modular monolith cliente-servidor em .NET (servidor da loja Postgres + PDVs na LAN).
+Um produto, várias verticais (frentes).
 
 ## Regras inegociáveis
 - PK = ULID (string). NUNCA autoincrement.
@@ -479,7 +486,7 @@ Modular monolith local-first em .NET. Um produto, várias verticais (frentes).
 - Toda query filtra por EmpresaId (multi-tenant).
 - Módulos só se comunicam por *.Contratos (interfaces + DTOs + eventos) e por
   eventos do Wolverine. PROIBIDO referenciar Dominio/Infraestrutura de outro módulo.
-- A venda fecha SEMPRE no banco local primeiro. Fiscal é assíncrono (não trava o caixa).
+- A venda fecha no servidor da loja (Postgres, transação). Fiscal é assíncrono (não trava o caixa).
 - Use Wolverine (MIT) para bus + outbox. NÃO usar MediatR/MassTransit (comerciais).
 
 ## Estrutura

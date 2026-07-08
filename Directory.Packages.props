@@ -13,12 +13,16 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.9" />
 
-    <!-- EF Core 10 (banco local SQLite; provider trocável para Postgres depois) -->
+    <!-- EF Core 10. Postgres = banco do servidor da loja (principal). SQLite = contingência
+         local futura por PDV; provider trocável por configuração. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.9" />
 
     <!-- Bus in-process + Outbox durável -->
     <PackageVersion Include="WolverineFx" Version="6.16.0" />
+    <PackageVersion Include="WolverineFx.Postgresql" Version="6.16.0" />
     <PackageVersion Include="WolverineFx.Sqlite" Version="6.16.0" />
     <PackageVersion Include="WolverineFx.Http" Version="6.16.0" />
     <!-- Compilador de código em runtime (Roslyn). O core do Wolverine 6 não embute mais. -->

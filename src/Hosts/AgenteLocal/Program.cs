@@ -3,14 +3,19 @@ using Cadastros.Infraestrutura;
 using JasperFx;
 using JasperFx.Resources;
 using Microsoft.EntityFrameworkCore;
+using Plataforma.Dominio;
 using Plataforma.Infraestrutura;
 using Wolverine;
+using Wolverine.Postgresql;
 using Wolverine.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Connection string local (SQLite). Mesmo arquivo para dados e para o outbox do Wolverine.
-var conexaoLocal = builder.Configuration.GetConnectionString("Local") ?? "Data Source=automacao.db";
+// Opções de banco (seção "Banco"): provider + connection string. Principal = Postgres no
+// servidor da loja; SQLite fica para contingência local futura por PDV. A mesma connection
+// string serve tanto os dados dos módulos quanto o outbox do Wolverine.
+var opcoesBanco = builder.Configuration.GetSection(OpcoesBanco.Secao).Get<OpcoesBanco>()
+    ?? new OpcoesBanco();
 
 // Plataforma (shared kernel): licença + contexto de empresa.
 builder.Services.AdicionarPlataforma();
@@ -32,10 +37,16 @@ foreach (var modulo in modulos)
 
 builder.Services.AddSingleton(migrationRegistry);
 
-// Wolverine = bus in-process + outbox durável sobre SQLite (seção 5).
+// Wolverine = bus in-process + outbox durável (seção 5). O provider do outbox segue o
+// mesmo OpcoesBanco.Provider dos módulos: Postgres no servidor da loja, SQLite na
+// contingência local futura.
 builder.Host.UseWolverine(opts =>
 {
-    opts.PersistMessagesWithSqlite(conexaoLocal);
+    if (opcoesBanco.Provider == ProviderBanco.Postgres)
+        opts.PersistMessagesWithPostgresql(opcoesBanco.ConnectionString);
+    else
+        opts.PersistMessagesWithSqlite(opcoesBanco.ConnectionString);
+
     opts.Policies.AutoApplyTransactions();
     opts.Policies.UseDurableLocalQueues();
 });
@@ -45,7 +56,7 @@ builder.Services.AddResourceSetupOnStartup();
 
 var app = builder.Build();
 
-// Aplica as migrations de cada módulo → cria o SQLite local com as tabelas (cad_*).
+// Aplica as migrations de cada módulo → cria as tabelas (cad_*) no banco do servidor.
 await AplicarMigrationsDosModulosAsync(app);
 
 // Endpoint de saúde: prova que o host sobe.

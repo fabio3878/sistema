@@ -4,6 +4,7 @@ using Cadastros.Infraestrutura;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -15,47 +16,51 @@ namespace Cadastros.Infraestrutura.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Cadastros.Dominio.Pessoa", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(26)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(26)");
 
                     b.Property<DateTimeOffset>("AtualizadoEm")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset>("CriadoEm")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Documento")
                         .IsRequired()
                         .HasMaxLength(14)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(14)");
 
                     b.Property<string>("EmpresaId")
                         .IsRequired()
                         .HasMaxLength(26)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(26)");
 
                     b.Property<bool>("Excluido")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("OrigemId")
                         .HasMaxLength(26)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(26)");
 
                     b.Property<int>("Papeis")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<long>("Versao")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -70,50 +75,51 @@ namespace Cadastros.Infraestrutura.Migrations
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(26)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(26)");
 
                     b.Property<DateTimeOffset>("AtualizadoEm")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CodigoBarras")
                         .HasMaxLength(60)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(60)");
 
                     b.Property<DateTimeOffset>("CriadoEm")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Descricao")
                         .IsRequired()
                         .HasMaxLength(300)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(300)");
 
                     b.Property<string>("EmpresaId")
                         .IsRequired()
                         .HasMaxLength(26)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(26)");
 
                     b.Property<bool>("Excluido")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Ncm")
                         .IsRequired()
                         .HasMaxLength(8)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(8)");
 
                     b.Property<string>("OrigemId")
                         .HasMaxLength(26)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(26)");
 
                     b.Property<decimal>("PrecoVenda")
-                        .HasColumnType("decimal(18,4)");
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
 
                     b.Property<string>("Sku")
                         .IsRequired()
                         .HasMaxLength(60)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(60)");
 
                     b.Property<long>("Versao")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 

@@ -2,9 +2,9 @@ using BuildingBlocks;
 using Cadastros.Aplicacao;
 using Cadastros.Contratos;
 using Cadastros.Dominio;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Plataforma.Infraestrutura;
 
 namespace Cadastros.Infraestrutura;
 
@@ -18,9 +18,8 @@ public sealed class CadastrosModulo : IModulo
 
     public void RegistrarServicos(IServiceCollection services, IConfiguration config)
     {
-        // Provider local = SQLite (seção 11). Um host central (Api.Central) trocaria por UseNpgsql.
-        var conexao = config.GetConnectionString("Local") ?? "Data Source=automacao.db";
-        services.AddDbContext<CadastrosDbContext>(o => o.UseSqlite(conexao));
+        // Provider (SQLite/Postgres) e connection string vêm da configuração (seção 11).
+        services.AdicionarDbContextConfiguravel<CadastrosDbContext>(config);
 
         services.AddScoped<IUnidadeDeTrabalho>(sp => sp.GetRequiredService<CadastrosDbContext>());
         services.AddScoped<IPessoaRepositorio, PessoaRepositorio>();

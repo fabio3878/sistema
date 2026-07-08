@@ -1,23 +1,29 @@
 # Sistema de Automação Comercial
 
-Modular monolith **local-first** em .NET 10. Um produto, várias verticais (frentes).
+Modular monolith **cliente-servidor** em .NET 10. Um produto, várias verticais (frentes).
+Modelo principal: um **servidor da loja** (PostgreSQL) e os **PDVs como clientes na LAN** —
+vários caixas compartilham a mesma fonte de verdade (estoque, preços) em tempo real.
+Contingência offline por PDV (SQLite local) é evolução futura, ainda não construída.
 Documento de arquitetura completo: `ARQUITETURA_1.md`.
 
 ## Regras inegociáveis
-- **PK = ULID** (string). NUNCA autoincrement (dois PDVs gerariam id=1 e colidiriam).
+- **PK = ULID** (string). NUNCA autoincrement (colidiria entre lojas na consolidação e entre
+  PDVs no modo offline futuro; ULID é gerado pela aplicação, não pelo banco).
 - **Soft delete** (`Excluido=true`) no que sincroniza. NUNCA DELETE físico.
 - Toda entidade sincronizável herda `EntidadeBase` (Id, EmpresaId, CriadoEm,
   AtualizadoEm, Versao, Excluido, OrigemId).
 - Toda query filtra por `EmpresaId` (multi-tenant). Filtro global no EF: `!e.Excluido`.
 - Módulos só se comunicam por `*.Contratos` (interfaces + DTOs + eventos) e por
   eventos do Wolverine. **PROIBIDO** referenciar `Dominio`/`Infraestrutura` de outro módulo.
-- A venda fecha SEMPRE no banco local primeiro. Fiscal é assíncrono (não trava o caixa).
+- A venda fecha no **servidor da loja** (Postgres, transação). Fiscal é assíncrono (não trava o caixa).
+- Provider de banco é **por configuração** (seção `Banco`): `Postgres` (servidor) ou `Sqlite`
+  (contingência local futura). A escolha mora só em `AdicionarDbContextConfiguravel` e no outbox.
 - Bus + outbox = **Wolverine** (MIT). NÃO usar MediatR/MassTransit (viraram comerciais).
 - `Result`/`Result<T>` para fluxo de domínio; exceção só para erro inesperado.
 
 ## Stack (versões fixadas em Directory.Packages.props)
-- .NET 10.0.9 · EF Core 10.0.9 (SQLite local; Postgres na central depois)
-- Wolverine 6.16.0 (`WolverineFx`, `.Sqlite`, `.Http`)
+- .NET 10.0.9 · EF Core 10.0.9 (Postgres no servidor da loja; SQLite = contingência local futura)
+- Wolverine 6.16.0 (`WolverineFx`, `.Postgresql`, `.Sqlite`, `.Http`)
 - Ulid 1.4.1 · NetArchTest.Rules 1.3.2 · xUnit
 - Central Package Management ligado: `.csproj` referenciam pacote **sem** `Version=`.
 
@@ -27,7 +33,7 @@ src/Compartilhado/BuildingBlocks           EntidadeBase, Result, IModulo, evento
 src/Plataforma/{Dominio,Aplicacao,Infraestrutura}   shared kernel (licença, tenant)
 src/Modulos/<Nome>/{Contratos,Dominio,Aplicacao,Infraestrutura}
 src/Frentes/Frente.<Vertical>              (ainda não criadas)
-src/Hosts/AgenteLocal                      host local: Wolverine + módulos + HTTP /health
+src/Hosts/AgenteLocal                      servidor da loja: Wolverine + módulos + HTTP /health
 tests/<X>.Tests                            unidade
 tests/Arquitetura.Tests                    fronteiras (NetArchTest) — falha o build se violar
 ```
