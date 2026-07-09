@@ -17,6 +17,7 @@ public sealed class AcessoDbContext(DbContextOptions<AcessoDbContext> options)
     public DbSet<Perfil> Perfis => Set<Perfil>();
     public DbSet<UsuarioPerfil> UsuarioPerfis => Set<UsuarioPerfil>();
     public DbSet<PerfilFuncionalidade> PerfilFuncionalidades => Set<PerfilFuncionalidade>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     // Tier B — catálogo de capacidade (referência global)
     public DbSet<Modulo> Modulos => Set<Modulo>();
@@ -77,6 +78,19 @@ public sealed class AcessoDbContext(DbContextOptions<AcessoDbContext> options)
             e.Property(p => p.PerfilId).HasMaxLength(26).IsRequired();
             e.Property(p => p.FuncionalidadeCodigo).HasMaxLength(100).IsRequired();
             e.HasIndex(p => new { p.EmpresaId, p.PerfilId, p.FuncionalidadeCodigo }).IsUnique();
+        });
+
+        modelBuilder.Entity<RefreshToken>(e =>
+        {
+            e.ToTable("acs_refresh_tokens");
+            e.ConfigurarEntidadeBase();
+            e.Property(p => p.UsuarioId).HasMaxLength(26).IsRequired();
+            e.Property(p => p.StampSeguranca).HasMaxLength(26).IsRequired();
+            e.Property(p => p.TokenHash).HasMaxLength(64).IsRequired();
+            e.Property(p => p.MotivoRevogacao).HasMaxLength(200);
+            e.Property(p => p.SubstituidoPorId).HasMaxLength(26);
+            e.HasIndex(p => new { p.EmpresaId, p.TokenHash }).IsUnique();
+            e.HasIndex(p => new { p.EmpresaId, p.UsuarioId });
         });
 
         // TIER B — catálogo. Dado de referência GLOBAL: chave natural (Codigo), sem EmpresaId, sem

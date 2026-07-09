@@ -16,6 +16,11 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!-- Acesso.Infraestrutura depende do shared framework do ASP.NET; o projeto de teste também. -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Modulos\Acesso\Acesso.Dominio\Acesso.Dominio.csproj" />
     <ProjectReference Include="..\..\src\Modulos\Acesso\Acesso.Infraestrutura\Acesso.Infraestrutura.csproj" />

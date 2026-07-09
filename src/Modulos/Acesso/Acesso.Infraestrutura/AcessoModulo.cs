@@ -23,10 +23,16 @@ public sealed class AcessoModulo : IModulo
         services.AddScoped<IUnidadeDeTrabalho>(sp => sp.GetRequiredService<AcessoDbContext>());
         services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
         services.AddScoped<IPerfilRepositorio, PerfilRepositorio>();
+        services.AddScoped<IRefreshTokenRepositorio, RefreshTokenRepositorio>();
         services.AddSingleton<IHashSenha, Pbkdf2HashSenha>();
 
         services.AddScoped<IAcessoConsulta, AcessoConsulta>();
         services.AddScoped<AcessoAppService>();
+        services.AddScoped<AutenticacaoAppService>();
+
+        // Autenticação JWT (valida token, lê Acesso:Jwt; chave via secret/env).
+        services.AddSingleton<IServicoToken, ServicoTokenJwt>();
+        services.AdicionarAutenticacaoAcesso(config);
 
         services.AddScoped<SeederAcesso>();
     }

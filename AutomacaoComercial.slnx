@@ -11,6 +11,7 @@
     <Project Path="src/Modulos/Acesso/Acesso.Aplicacao/Acesso.Aplicacao.csproj" />
     <Project Path="src/Modulos/Acesso/Acesso.Contratos/Acesso.Contratos.csproj" />
     <Project Path="src/Modulos/Acesso/Acesso.Dominio/Acesso.Dominio.csproj" />
+    <Project Path="src/Modulos/Acesso/Acesso.Http/Acesso.Http.csproj" />
     <Project Path="src/Modulos/Acesso/Acesso.Infraestrutura/Acesso.Infraestrutura.csproj" />
   </Folder>
   <Folder Name="/src/Modulos/Cadastros/">

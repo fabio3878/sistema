@@ -7,5 +7,6 @@ namespace Acesso.Contratos;
 public interface IAcessoConsulta
 {
     Task<UsuarioDto?> ObterUsuario(string empresaId, string usuarioId, CancellationToken ct = default);
+    Task<IReadOnlyList<UsuarioDto>> ListarUsuarios(string empresaId, CancellationToken ct = default);
     Task<PerfilDto?> ObterPerfil(string empresaId, string perfilId, CancellationToken ct = default);
 }

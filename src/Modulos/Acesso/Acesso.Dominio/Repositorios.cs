@@ -24,6 +24,9 @@ public interface IUsuarioRepositorio
 
     /// <summary>Existe algum usuário para o tenant? (decide o seed do admin no first-run).</summary>
     Task<bool> ExisteAlgum(string empresaId, CancellationToken ct = default);
+
+    /// <summary>Lista os usuários do tenant (com seus perfis).</summary>
+    Task<IReadOnlyList<Usuario>> Listar(string empresaId, CancellationToken ct = default);
 }
 
 /// <summary>Portas de persistência de Perfil.</summary>
@@ -32,6 +35,21 @@ public interface IPerfilRepositorio
     Task Adicionar(Perfil perfil, CancellationToken ct = default);
     Task<Perfil?> ObterPorId(string empresaId, string id, CancellationToken ct = default);
     Task<Perfil?> ObterPorNome(string empresaId, string nome, CancellationToken ct = default);
+
+    /// <summary>Carrega vários perfis (com suas funcionalidades) para montar as permissões no login.</summary>
+    Task<IReadOnlyList<Perfil>> ObterPorIds(string empresaId, IReadOnlyCollection<string> ids, CancellationToken ct = default);
+}
+
+/// <summary>Portas de persistência de RefreshToken.</summary>
+public interface IRefreshTokenRepositorio
+{
+    Task Adicionar(RefreshToken token, CancellationToken ct = default);
+
+    /// <summary>Busca pelo hash do token bruto (o valor recebido do cliente é hasheado antes).</summary>
+    Task<RefreshToken?> ObterPorHash(string empresaId, string tokenHash, CancellationToken ct = default);
+
+    /// <summary>Revoga todos os tokens ativos do usuário (logout total / troca de senha / suspeita de roubo).</summary>
+    Task RevogarTodosDoUsuario(string empresaId, string usuarioId, string motivo, CancellationToken ct = default);
 }
 
 /// <summary>Confirma as mutações pendentes numa transação (Unit of Work do módulo).</summary>

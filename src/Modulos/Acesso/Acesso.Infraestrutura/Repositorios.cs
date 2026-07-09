@@ -21,6 +21,13 @@ public sealed class UsuarioRepositorio(AcessoDbContext db) : IUsuarioRepositorio
 
     public Task<bool> ExisteAlgum(string empresaId, CancellationToken ct = default) =>
         db.Usuarios.AnyAsync(u => u.EmpresaId == empresaId, ct);
+
+    public async Task<IReadOnlyList<Usuario>> Listar(string empresaId, CancellationToken ct = default) =>
+        await db.Usuarios
+            .Include(u => u.Perfis)
+            .Where(u => u.EmpresaId == empresaId)
+            .OrderBy(u => u.LoginNormalizado)
+            .ToListAsync(ct);
 }
 
 /// <summary>Implementação EF Core das portas de Perfil.</summary>
@@ -38,4 +45,34 @@ public sealed class PerfilRepositorio(AcessoDbContext db) : IPerfilRepositorio
         db.Perfis
             .Include(p => p.Funcionalidades)
             .FirstOrDefaultAsync(p => p.EmpresaId == empresaId && p.Nome == nome, ct);
+
+    public async Task<IReadOnlyList<Perfil>> ObterPorIds(
+        string empresaId, IReadOnlyCollection<string> ids, CancellationToken ct = default) =>
+        await db.Perfis
+            .Include(p => p.Funcionalidades)
+            .Where(p => p.EmpresaId == empresaId && ids.Contains(p.Id))
+            .ToListAsync(ct);
+}
+
+/// <summary>Implementação EF Core das portas de RefreshToken.</summary>
+public sealed class RefreshTokenRepositorio(AcessoDbContext db) : IRefreshTokenRepositorio
+{
+    public async Task Adicionar(RefreshToken token, CancellationToken ct = default) =>
+        await db.RefreshTokens.AddAsync(token, ct);
+
+    public Task<RefreshToken?> ObterPorHash(string empresaId, string tokenHash, CancellationToken ct = default) =>
+        db.RefreshTokens.FirstOrDefaultAsync(t => t.EmpresaId == empresaId && t.TokenHash == tokenHash, ct);
+
+    public async Task RevogarTodosDoUsuario(
+        string empresaId, string usuarioId, string motivo, CancellationToken ct = default)
+    {
+        var agora = DateTimeOffset.UtcNow;
+        var ativos = await db.RefreshTokens
+            .Where(t => t.EmpresaId == empresaId && t.UsuarioId == usuarioId
+                        && t.RevogadoEm == null && t.ExpiraEm > agora)
+            .ToListAsync(ct);
+
+        foreach (var t in ativos)
+            t.Revogar(motivo);
+    }
 }

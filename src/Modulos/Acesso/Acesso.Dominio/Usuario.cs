@@ -114,6 +114,17 @@ public sealed class Usuario : EntidadeBase
         MarcarAtualizado();
     }
 
+    /// <summary>Troca a senha (recebe o hash já calculado) e **rotaciona o StampSeguranca**, o que
+    /// invalida todos os tokens/refresh emitidos antes. Limpa a exigência de troca.</summary>
+    public void AlterarSenha(string senhaHash)
+    {
+        SenhaHash = senhaHash;
+        SenhaAlteradaEm = DateTimeOffset.UtcNow;
+        DeveTrocarSenha = false;
+        StampSeguranca = Ulid.NewUlid().ToString();
+        MarcarAtualizado();
+    }
+
     public void Ativar()
     {
         if (Ativo) return;

@@ -20,6 +20,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Modulos\Acesso\Acesso.Dominio\Acesso.Dominio.csproj" />
     <ProjectReference Include="..\..\src\Modulos\Acesso\Acesso.Infraestrutura\Acesso.Infraestrutura.csproj" />
+    <ProjectReference Include="..\..\src\Modulos\Acesso\Acesso.Http\Acesso.Http.csproj" />
+    <ProjectReference Include="..\..\src\Plataforma\Plataforma.Dominio\Plataforma.Dominio.csproj" />
     <ProjectReference Include="..\..\src\Modulos\Cadastros\Cadastros.Dominio\Cadastros.Dominio.csproj" />
     <ProjectReference Include="..\..\src\Modulos\Cadastros\Cadastros.Infraestrutura\Cadastros.Infraestrutura.csproj" />
     <ProjectReference Include="..\..\src\Plataforma\Plataforma.Infraestrutura\Plataforma.Infraestrutura.csproj" />

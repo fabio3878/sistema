@@ -28,6 +28,13 @@ Documento de arquitetura completo: `ARQUITETURA_1.md`.
   é contrato do software, declarada em CÓDIGO** (constantes + `IModulo.Funcionalidades()`), nunca
   dado editável por empresa; o catálogo (`acs_modulos`/`acs_funcionalidades`) é reconciliado do
   código no startup. Convenção de código: `<modulo>.<recurso>.<acao>` (ex.: `cad.cliente.criar`).
+- **Autenticação:** login em `/acesso/*` emite **JWT HS256 curto** (permissões nas claims) +
+  **refresh token revogável** (`acs_refresh_tokens`, hash SHA-256, rotação). `Acesso:Jwt:*` no
+  appsettings, mas **`ChaveAssinatura` só em user-secrets/env** (≥32 bytes), nunca versionada.
+  `IContextoEmpresa`/`IContextoUsuario` são **scoped**, populados das claims; sem HTTP caem no tenant
+  configurado (`Plataforma:EmpresaId`). Autorizar endpoints com
+  `RequireAuthorization(PoliticaAcesso.Funcionalidade("<codigo>"))`. **Handlers Wolverine tomam o
+  tenant da mensagem** (`IEventoDominio.EmpresaId`), nunca do `IContextoEmpresa` scoped.
 
 ## Stack (versões fixadas em Directory.Packages.props)
 - .NET 10.0.9 · EF Core 10.0.9 (Postgres no servidor da loja; SQLite = contingência local futura)

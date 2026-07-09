@@ -51,6 +51,19 @@ public class UsuarioTests
     }
 
     [Fact]
+    public void AlterarSenha_troca_hash_limpa_flag_e_rotaciona_stamp()
+    {
+        var u = Usuario.Criar("EMPRESA_DEV", new DadosUsuario("fulano", "Fulano", "segredo123"), Hash).Valor!;
+        var stampAntes = u.StampSeguranca;
+
+        u.AlterarSenha(Hash.Hash("novaSenha456"));
+
+        Assert.False(u.DeveTrocarSenha);
+        Assert.NotEqual(stampAntes, u.StampSeguranca);       // invalida tokens antigos
+        Assert.True(Hash.Verificar("novaSenha456", u.SenhaHash));
+    }
+
+    [Fact]
     public void Inativar_bloqueia_e_muda_stamp_de_seguranca()
     {
         var u = Usuario.Criar("EMPRESA_DEV", new DadosUsuario("fulano", "Fulano", "segredo123"), Hash).Valor!;

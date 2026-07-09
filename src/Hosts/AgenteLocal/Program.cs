@@ -1,3 +1,4 @@
+using Acesso.Http;
 using Acesso.Infraestrutura;
 using BuildingBlocks;
 using Cadastros.Infraestrutura;
@@ -18,8 +19,10 @@ var builder = WebApplication.CreateBuilder(args);
 var opcoesBanco = builder.Configuration.GetSection(OpcoesBanco.Secao).Get<OpcoesBanco>()
     ?? new OpcoesBanco();
 
-// Plataforma (shared kernel): licença + contexto de empresa.
-builder.Services.AdicionarPlataforma();
+// Plataforma (shared kernel): licença + contexto de empresa/usuário (scoped, via claims) +
+// autorização por funcionalidade. Lê o tenant do servidor de Plataforma:EmpresaId.
+builder.Services.AdicionarPlataforma(builder.Configuration);
+builder.Services.AdicionarAutorizacaoPorFuncionalidade();
 
 // Descoberta de módulos: o host só ativa os habilitados pela licença (seção 8).
 // Novos módulos entram nesta lista — cada um se auto-registra via IModulo.
@@ -69,8 +72,14 @@ await AplicarMigrationsDosModulosAsync(app);
 // no first-run do tenant, cria o admin inicial (segredo em Acesso:AdminInicial:*).
 await SemearAcessoAsync(app, manifestoFuncionalidades);
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 // Endpoint de saúde: prova que o host sobe.
 app.MapGet("/health", () => Results.Ok(new { status = "ok", servico = "AgenteLocal" }));
+
+// Endpoints de autenticação/acesso (login, refresh, logout, trocar-senha, ...).
+app.MapAcessoEndpoints();
 
 return await app.RunJasperFxCommands(args);
 

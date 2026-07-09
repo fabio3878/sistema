@@ -346,9 +346,19 @@ public interface IAcessoConsulta
 }
 ```
 
-**Fora de escopo desta etapa (autenticação):** login/JWT + refresh revogável, `IContextoUsuario`
-em Plataforma, middleware de autorização nos endpoints e a virada de `IContextoEmpresa` para
-*scoped*. O modelo de dados acima já nasce compatível (hash + `StampSeguranca`).
+**Autenticação (implementada):** login em `/acesso/login` valida a senha (`IHashSenha`), monta as
+permissões (união dos perfis ativos ou `ConcedeTodas`) e emite um **JWT HS256 curto** (claims `sub`,
+`empresa`, `login`, `stamp`, e `perm_all`/`func`) + um **refresh token revogável** persistido em
+`acs_refresh_tokens` (256 bits; no banco só o SHA-256). `/acesso/refresh` **rotaciona** (revoga o
+antigo, emite novo par) e recusa se o `StampSeguranca` mudou; reuso de token revogado ⇒ revoga todos
+(anti-roubo). `/acesso/trocar-senha` rotaciona o stamp (invalida tokens) e `/acesso/logout` revoga.
+Tempos configuráveis em `Acesso:Jwt:*`; **chave de assinatura só em user-secrets/env**.
+
+`IContextoUsuario` (Plataforma.Dominio) + `IContextoEmpresa` viram **scoped**, lidos das claims via
+`IHttpContextAccessor` (fallback: tenant configurado do servidor). Autorização por política
+`func:<codigo>` (`FuncionalidadePolicyProvider` + `IContextoUsuario.Pode`); endpoints usam
+`RequireAuthorization(PoliticaAcesso.Funcionalidade(codigo))`. Handlers Wolverine tomam o tenant da
+mensagem, não do contexto scoped.
 
 ---
 

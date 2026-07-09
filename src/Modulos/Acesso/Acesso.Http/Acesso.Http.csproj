@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- Endpoints minimal API: precisa dos tipos de roteamento/autorização do ASP.NET. -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Acesso.Aplicacao\Acesso.Aplicacao.csproj" />
+    <ProjectReference Include="..\Acesso.Contratos\Acesso.Contratos.csproj" />
+    <ProjectReference Include="..\..\..\Plataforma\Plataforma.Dominio\Plataforma.Dominio.csproj" />
+  </ItemGroup>
+
+</Project>

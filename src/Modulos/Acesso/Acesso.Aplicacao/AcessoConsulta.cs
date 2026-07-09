@@ -22,6 +22,14 @@ public sealed class AcessoConsulta(IUsuarioRepositorio usuarios, IPerfilReposito
             u.DeveTrocarSenha, u.UltimoLoginEm, perfilIds);
     }
 
+    public async Task<IReadOnlyList<UsuarioDto>> ListarUsuarios(string empresaId, CancellationToken ct = default)
+    {
+        var lista = await usuarios.Listar(empresaId, ct);
+        return lista.Select(u => new UsuarioDto(
+            u.Id, u.EmpresaId, u.Login, u.NomeExibicao, u.Email, u.Ativo, u.DeveTrocarSenha, u.UltimoLoginEm,
+            u.Perfis.Where(p => !p.Excluido).Select(p => p.PerfilId).ToArray())).ToArray();
+    }
+
     public async Task<PerfilDto?> ObterPerfil(string empresaId, string perfilId, CancellationToken ct = default)
     {
         var p = await perfis.ObterPorId(empresaId, perfilId, ct);

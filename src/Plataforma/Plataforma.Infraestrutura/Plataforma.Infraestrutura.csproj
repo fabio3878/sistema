@@ -3,7 +3,13 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <!-- Microsoft.Extensions.Configuration.Binder vem do shared framework (FrameworkReference). -->
+  </ItemGroup>
+
+  <!-- Cross-cutting web: IHttpContextAccessor, ClaimsPrincipal e autorização por política.
+       Vem do shared framework do ASP.NET (o sistema roda no host web). -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>

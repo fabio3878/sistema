@@ -73,6 +73,32 @@ public class FronteiraTests
         Assert.True(resultado.IsSuccessful, Falhas(resultado));
     }
 
+    [Fact]
+    public void Acesso_Http_nao_depende_de_infra_nem_de_outros_modulos()
+    {
+        var resultado = Types.InAssembly(typeof(Acesso.Http.AcessoEndpoints).Assembly)
+            .ShouldNot().HaveDependencyOnAny(
+                "Acesso.Infraestrutura",
+                "Cadastros.Dominio",
+                "Cadastros.Infraestrutura",
+                "Microsoft.EntityFrameworkCore")
+            .GetResult();
+
+        Assert.True(resultado.IsSuccessful, Falhas(resultado));
+    }
+
+    [Fact]
+    public void Plataforma_Dominio_nao_depende_de_aspnet_nem_de_ef()
+    {
+        var resultado = Types.InAssembly(typeof(Plataforma.Dominio.IContextoUsuario).Assembly)
+            .ShouldNot().HaveDependencyOnAny(
+                "Microsoft.AspNetCore",
+                "Microsoft.EntityFrameworkCore")
+            .GetResult();
+
+        Assert.True(resultado.IsSuccessful, Falhas(resultado));
+    }
+
     private static string Falhas(TestResult r) =>
         "Tipos que violam a fronteira: " + string.Join(", ", r.FailingTypeNames ?? []);
 }
