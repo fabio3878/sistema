@@ -2,7 +2,8 @@ import { useEffect } from 'react'
 import { Command } from 'cmdk'
 import { useNavigate } from 'react-router-dom'
 import { NAV } from '@/modulos/registro'
-import { podeVer, useSessao } from '@/lib/sessao'
+import { podeVer } from '@/lib/sessao'
+import { useSessao } from '@/lib/auth'
 
 interface CommandPaletteProps {
   aberto: boolean

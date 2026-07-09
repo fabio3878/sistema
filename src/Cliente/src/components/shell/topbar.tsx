@@ -2,15 +2,17 @@ import { Bell } from 'lucide-react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from './theme-toggle'
-import { useSessao } from '@/lib/sessao'
+import { useSessao, useAuth } from '@/lib/auth'
 
 interface TopbarProps {
   titulo: string
+  onTrocarSenha: () => void
 }
 
 /** Barra superior minimalista (~52px): breadcrumb + ações + usuário. DESIGN_1 §3. */
-export function Topbar({ titulo }: TopbarProps) {
+export function Topbar({ titulo, onTrocarSenha }: TopbarProps) {
   const { usuario } = useSessao()
+  const { sair } = useAuth()
   const iniciais = usuario.nome
     .split(' ')
     .map((p) => p[0])
@@ -54,10 +56,16 @@ export function Topbar({ titulo }: TopbarProps) {
                 <p className="text-caption text-fg-muted">@{usuario.login}</p>
               </div>
               <DropdownMenu.Separator className="my-1 h-px bg-border" />
-              <DropdownMenu.Item className="cursor-pointer rounded-md px-2 py-1.5 text-small text-fg outline-none data-[highlighted]:bg-black/5 dark:data-[highlighted]:bg-white/5">
+              <DropdownMenu.Item
+                onSelect={onTrocarSenha}
+                className="cursor-pointer rounded-md px-2 py-1.5 text-small text-fg outline-none data-[highlighted]:bg-black/5 dark:data-[highlighted]:bg-white/5"
+              >
                 Trocar senha
               </DropdownMenu.Item>
-              <DropdownMenu.Item className="cursor-pointer rounded-md px-2 py-1.5 text-small text-danger outline-none data-[highlighted]:bg-danger-bg">
+              <DropdownMenu.Item
+                onSelect={() => void sair()}
+                className="cursor-pointer rounded-md px-2 py-1.5 text-small text-danger outline-none data-[highlighted]:bg-danger-bg"
+              >
                 Sair
               </DropdownMenu.Item>
             </DropdownMenu.Content>

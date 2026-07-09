@@ -16,7 +16,24 @@ cd src/Cliente
 npm install
 npm run dev            # http://localhost:5173
 ```
-Isso já sobe a casca completa (sidebar recolhível, topbar, ⌘K, tema claro/escuro, dashboard).
+Isso já sobe a casca completa (login, sidebar recolhível, topbar, ⌘K, tema claro/escuro, dashboard).
+
+### Autenticação (login real contra o host .NET)
+A tela de login consome `/acesso/*` do host `AgenteLocal`. Em dev, o Vite faz **proxy** de
+`/acesso` para o host (padrão `http://localhost:5080`, configurável por `AGENTE_LOCAL_URL`) —
+sem CORS. A sessão (usuário, `ConcedeTodas`, `func:<codigo>`) sai das claims do JWT + `/acesso/eu`;
+tokens ficam em `localStorage` e são renovados via `/acesso/refresh`. Em produção/Tauri, defina
+`VITE_API_URL`.
+
+Suba o host numa porta fixa (segredos só por env, nunca versionados):
+```bash
+# na raiz do repo
+ASPNETCORE_URLS=http://localhost:5080 \
+Banco__ConnectionString="Host=localhost;Port=5432;Database=automacao;Username=postgres;Password=<senha>" \
+Acesso__Jwt__ChaveAssinatura="<>=32 bytes>" \
+Acesso__AdminInicial__Senha="<senha-admin>" \
+dotnet run --project src/Hosts/AgenteLocal
+```
 
 ## Rodar como app desktop (Tauri) — requer toolchain Rust
 O binário nativo compila em **Rust**, que **ainda não está instalado** nesta máquina. Depois de

@@ -4,7 +4,8 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { NAV } from '@/modulos/registro'
-import { podeVer, useSessao } from '@/lib/sessao'
+import { podeVer } from '@/lib/sessao'
+import { useSessao } from '@/lib/auth'
 
 interface SidebarProps {
   recolhida: boolean
