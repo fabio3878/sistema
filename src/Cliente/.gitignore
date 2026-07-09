@@ -1,0 +1,20 @@
+# dependências e build do front
+node_modules
+dist
+dist-ssr
+*.local
+
+# logs / editor
+npm-debug.log*
+.vite
+
+# artefatos do tsc -b (project references)
+*.tsbuildinfo
+/vite.config.js
+/vite.config.d.ts
+/tailwind.config.js
+/tailwind.config.d.ts
+
+# Rust / Tauri (gerados)
+src-tauri/target
+src-tauri/gen

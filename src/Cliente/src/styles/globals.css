@@ -1,0 +1,89 @@
+@import '@fontsource-variable/inter';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design tokens — DESIGN_1.md §2. Fonte da verdade visual.
+ * Tema claro em :root, escuro em .dark. Neutros dominam; accent com parcimônia.
+ */
+@layer base {
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --elevated: #ffffff;
+    --border: #e5e7eb;
+    --fg: #1a1d21;
+    --fg-muted: #6b7280;
+
+    --primary: #5b5bd6;
+    --primary-fg: #ffffff;
+
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --info: #2563eb;
+
+    --success-bg: #ecfdf3;
+    --warning-bg: #fffaeb;
+    --danger-bg: #fef3f2;
+    --info-bg: #eff6ff;
+
+    --ring: rgba(91, 91, 214, 0.45);
+
+    color-scheme: light;
+  }
+
+  .dark {
+    --bg: #0e0f11;
+    --surface: #17181b;
+    --elevated: #1f2023;
+    --border: #26282c;
+    --fg: #e6e7ea;
+    --fg-muted: #9aa0a6;
+
+    --primary: #7c7cf0;
+    --primary-fg: #ffffff;
+
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #f87171;
+    --info: #60a5fa;
+
+    --success-bg: #12261a;
+    --warning-bg: #2a2011;
+    --danger-bg: #2a1516;
+    --info-bg: #12203a;
+
+    --ring: rgba(124, 124, 240, 0.55);
+
+    color-scheme: dark;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: 'Inter Variable', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Números tabulares para tabelas, valores e KPIs (DESIGN_1 §2.4). */
+  .tnum {
+    font-feature-settings: 'tnum';
+    font-variant-numeric: tabular-nums;
+  }
+}
