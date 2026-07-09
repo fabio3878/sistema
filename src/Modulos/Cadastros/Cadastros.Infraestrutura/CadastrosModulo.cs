@@ -22,7 +22,7 @@ public sealed class CadastrosModulo : IModulo
         services.AdicionarDbContextConfiguravel<CadastrosDbContext>(config);
 
         services.AddScoped<IUnidadeDeTrabalho>(sp => sp.GetRequiredService<CadastrosDbContext>());
-        services.AddScoped<IPessoaRepositorio, PessoaRepositorio>();
+        services.AddScoped<IClienteRepositorio, ClienteRepositorio>();
         services.AddScoped<IProdutoRepositorio, ProdutoRepositorio>();
 
         services.AddScoped<ICadastrosConsulta, CadastrosConsulta>();
@@ -30,4 +30,6 @@ public sealed class CadastrosModulo : IModulo
     }
 
     public void RegistrarMigrations(MigrationRegistry registry) => registry.Adicionar<CadastrosDbContext>();
+
+    public IEnumerable<FuncionalidadeManifesto> Funcionalidades() => FuncionalidadesCadastro.Manifesto();
 }

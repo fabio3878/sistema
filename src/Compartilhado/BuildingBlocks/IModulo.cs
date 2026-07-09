@@ -17,4 +17,11 @@ public interface IModulo
 
     /// <summary>Registra os DbContexts do módulo para o host aplicar migrations no startup.</summary>
     void RegistrarMigrations(MigrationRegistry registry);
+
+    /// <summary>
+    /// Funcionalidades (permissões) que o módulo expõe, declaradas em código. O host agrega o
+    /// manifesto de todos os módulos ativos e o módulo Acesso reconcilia para o catálogo no
+    /// startup. Default vazio: módulos sem controle de acesso próprio não precisam sobrescrever.
+    /// </summary>
+    IEnumerable<FuncionalidadeManifesto> Funcionalidades() => [];
 }

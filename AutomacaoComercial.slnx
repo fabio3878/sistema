@@ -7,6 +7,12 @@
     <Project Path="src/Hosts/AgenteLocal/AgenteLocal.csproj" />
   </Folder>
   <Folder Name="/src/Modulos/" />
+  <Folder Name="/src/Modulos/Acesso/">
+    <Project Path="src/Modulos/Acesso/Acesso.Aplicacao/Acesso.Aplicacao.csproj" />
+    <Project Path="src/Modulos/Acesso/Acesso.Contratos/Acesso.Contratos.csproj" />
+    <Project Path="src/Modulos/Acesso/Acesso.Dominio/Acesso.Dominio.csproj" />
+    <Project Path="src/Modulos/Acesso/Acesso.Infraestrutura/Acesso.Infraestrutura.csproj" />
+  </Folder>
   <Folder Name="/src/Modulos/Cadastros/">
     <Project Path="src/Modulos/Cadastros/Cadastros.Aplicacao/Cadastros.Aplicacao.csproj" />
     <Project Path="src/Modulos/Cadastros/Cadastros.Contratos/Cadastros.Contratos.csproj" />
@@ -19,6 +25,7 @@
     <Project Path="src/Plataforma/Plataforma.Infraestrutura/Plataforma.Infraestrutura.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Acesso.Tests/Acesso.Tests.csproj" />
     <Project Path="tests/Arquitetura.Tests/Arquitetura.Tests.csproj" />
     <Project Path="tests/Cadastros.Tests/Cadastros.Tests.csproj" />
   </Folder>

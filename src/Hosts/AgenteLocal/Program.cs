@@ -1,3 +1,4 @@
+using Acesso.Infraestrutura;
 using BuildingBlocks;
 using Cadastros.Infraestrutura;
 using JasperFx;
@@ -22,17 +23,22 @@ builder.Services.AdicionarPlataforma();
 
 // Descoberta de módulos: o host só ativa os habilitados pela licença (seção 8).
 // Novos módulos entram nesta lista — cada um se auto-registra via IModulo.
+// Exceção: "Acesso" é SEMPRE ativo (autenticação não é licenciável).
 var licenca = new LicencaLocal();
-IModulo[] modulos = [new CadastrosModulo()];
+IModulo[] modulos = [new AcessoModulo(), new CadastrosModulo()];
 var migrationRegistry = new MigrationRegistry();
+
+// Manifesto de funcionalidades agregado dos módulos ativos → reconciliado no catálogo pelo seeder.
+var manifestoFuncionalidades = new List<FuncionalidadeManifesto>();
 
 foreach (var modulo in modulos)
 {
-    if (!licenca.ModuloAtivo(modulo.Nome))
+    if (modulo.Nome != "Acesso" && !licenca.ModuloAtivo(modulo.Nome))
         continue;
 
     modulo.RegistrarServicos(builder.Services, builder.Configuration);
     modulo.RegistrarMigrations(migrationRegistry);
+    manifestoFuncionalidades.AddRange(modulo.Funcionalidades());
 }
 
 builder.Services.AddSingleton(migrationRegistry);
@@ -56,13 +62,24 @@ builder.Services.AddResourceSetupOnStartup();
 
 var app = builder.Build();
 
-// Aplica as migrations de cada módulo → cria as tabelas (cad_*) no banco do servidor.
+// Aplica as migrations de cada módulo → cria as tabelas (cad_*, acs_*) no banco do servidor.
 await AplicarMigrationsDosModulosAsync(app);
+
+// Semeadura de acesso: reconcilia o catálogo (código → acs_modulos/acs_funcionalidades) e,
+// no first-run do tenant, cria o admin inicial (segredo em Acesso:AdminInicial:*).
+await SemearAcessoAsync(app, manifestoFuncionalidades);
 
 // Endpoint de saúde: prova que o host sobe.
 app.MapGet("/health", () => Results.Ok(new { status = "ok", servico = "AgenteLocal" }));
 
 return await app.RunJasperFxCommands(args);
+
+static async Task SemearAcessoAsync(WebApplication app, IReadOnlyList<FuncionalidadeManifesto> manifesto)
+{
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<SeederAcesso>();
+    await seeder.ExecutarAsync(manifesto);
+}
 
 static async Task AplicarMigrationsDosModulosAsync(WebApplication app)
 {

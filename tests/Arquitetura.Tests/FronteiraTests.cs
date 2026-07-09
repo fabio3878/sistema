@@ -1,3 +1,5 @@
+using Acesso.Contratos;
+using Acesso.Dominio;
 using Cadastros.Contratos;
 using Cadastros.Dominio;
 using NetArchTest.Rules;
@@ -14,7 +16,7 @@ public class FronteiraTests
     [Fact]
     public void Dominio_nao_depende_de_infraestrutura_nem_de_aplicacao()
     {
-        var resultado = Types.InAssembly(typeof(Pessoa).Assembly)
+        var resultado = Types.InAssembly(typeof(Cliente).Assembly)
             .That().ResideInNamespace("Cadastros.Dominio")
             .ShouldNot().HaveDependencyOnAny(
                 "Cadastros.Aplicacao",
@@ -30,11 +32,41 @@ public class FronteiraTests
     [Fact]
     public void Contratos_e_folha_depende_so_de_buildingblocks()
     {
-        var resultado = Types.InAssembly(typeof(PessoaDto).Assembly)
+        var resultado = Types.InAssembly(typeof(ClienteDto).Assembly)
             .ShouldNot().HaveDependencyOnAny(
                 "Cadastros.Dominio",
                 "Cadastros.Aplicacao",
                 "Cadastros.Infraestrutura",
+                "Microsoft.EntityFrameworkCore")
+            .GetResult();
+
+        Assert.True(resultado.IsSuccessful, Falhas(resultado));
+    }
+
+    [Fact]
+    public void Acesso_Dominio_nao_depende_de_infraestrutura_nem_de_aplicacao()
+    {
+        var resultado = Types.InAssembly(typeof(Usuario).Assembly)
+            .That().ResideInNamespace("Acesso.Dominio")
+            .ShouldNot().HaveDependencyOnAny(
+                "Acesso.Aplicacao",
+                "Acesso.Infraestrutura",
+                "Plataforma.Aplicacao",
+                "Plataforma.Infraestrutura",
+                "Microsoft.EntityFrameworkCore")
+            .GetResult();
+
+        Assert.True(resultado.IsSuccessful, Falhas(resultado));
+    }
+
+    [Fact]
+    public void Acesso_Contratos_e_folha_depende_so_de_buildingblocks()
+    {
+        var resultado = Types.InAssembly(typeof(UsuarioDto).Assembly)
+            .ShouldNot().HaveDependencyOnAny(
+                "Acesso.Dominio",
+                "Acesso.Aplicacao",
+                "Acesso.Infraestrutura",
                 "Microsoft.EntityFrameworkCore")
             .GetResult();
 

@@ -14,6 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Modulos\Acesso\Acesso.Infraestrutura\Acesso.Infraestrutura.csproj" />
+    <ProjectReference Include="..\..\Modulos\Acesso\Acesso.Contratos\Acesso.Contratos.csproj" />
     <ProjectReference Include="..\..\Modulos\Cadastros\Cadastros.Infraestrutura\Cadastros.Infraestrutura.csproj" />
     <ProjectReference Include="..\..\Modulos\Cadastros\Cadastros.Contratos\Cadastros.Contratos.csproj" />
     <ProjectReference Include="..\..\Plataforma\Plataforma.Infraestrutura\Plataforma.Infraestrutura.csproj" />

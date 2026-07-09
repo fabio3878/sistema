@@ -40,7 +40,7 @@ Frentes de operação   PDV Varejo · Restaurante · Ordem de Serviço · Autope
 Módulos funcionais    Estoque · Compras · Financeiro(CR/CP/Caixa) · Fiscal ·
 (comuns a todos)        Contabilidade · RH · CRM
         ▲ usa
-Cadastros base        Pessoas · Produtos&Serviços · Tabelas Fiscais&Preço
+Cadastros base        Clientes · Fornecedores · Produtos&Serviços · Tabelas Fiscais&Preço
 (master data)
         ▲ apoia-se em
 Plataforma            Identidade&Acesso · Multi-empresa · Engine de Sync ·
@@ -237,22 +237,31 @@ outbox + worker** para a parte fiscal (chamada externa, retry, contingência).
 Cada módulo expõe **só** o que está em `*.Contratos`. Abaixo o essencial de cada um.
 
 ### 6.1 Plataforma (shared kernel)
-- **Identidade & Acesso**: usuários, perfis, permissões (claim-based).
+- **Abstrações de identidade/tenant**: `IContextoEmpresa` (tenant atual) e — futuro —
+  `IContextoUsuario` (usuário autenticado + permissões). A **persistência** de usuários/perfis
+  mora no módulo `Acesso` (6.8), não aqui: Plataforma é biblioteca sem banco.
 - **Multi-empresa & Filial**: tenant. Toda query filtra por `EmpresaId`.
-- **Licenciamento & Feature flags**: quais módulos/frentes estão ligados por cliente.
+- **Licenciamento & Feature flags**: quais módulos/frentes estão ligados por cliente (`ILicenca`).
 - **Engine de Sync**: outbox/changelog → reconciliação com central.
 - **Auditoria**: log de quem fez o quê.
 
 ### 6.2 Cadastros (master data)
-- **Pessoa** unificada com *papéis* (cliente, fornecedor, funcionário, transportadora).
-  Evita 3 cadastros do mesmo CPF/CNPJ.
+- **Cadastros separados por tipo**: cada papel tem entidade/tabela própria — **Cliente**
+  (`cad_clientes`) construído agora; Fornecedor, Funcionário e Transportadora virão depois,
+  cada um independente. Não há "Pessoa unificada com papéis": no varejo (público geral) a
+  sobreposição cliente↔fornecedor é rara, então o modelo separado é mais simples e a eventual
+  duplicação do mesmo CNPJ é aceitável.
+- **Cliente**: identidade (nome, CPF/CNPJ, tipo PF/PJ), contato (e-mail, telefone), dados
+  fiscais do destinatário (RG, IE, IM, `indIEDest`, regime tributário), status `Ativo`
+  (≠ soft delete), limite de crédito, e endereços 1:N (`cad_cliente_enderecos`,
+  Principal/Cobrança/Entrega, com código IBGE do município para emissão fiscal).
 - **Produto/Serviço**: SKU, código de barras, unidades, dados fiscais (NCM, CEST, CST, origem).
 - **Tabelas**: preço (por cliente/tabela), tributárias.
 
 ```csharp
 public interface ICadastrosConsulta
 {
-    Task<PessoaDto?> ObterPessoa(string empresaId, string pessoaId);
+    Task<ClienteDto?> ObterCliente(string empresaId, string clienteId);
     Task<ProdutoDto?> ObterProduto(string empresaId, string produtoId);
 }
 ```
@@ -305,6 +314,41 @@ public interface IFiscalServico
 - **Contabilidade**: plano de contas, lançamentos (a partir de eventos do financeiro), SPED.
 - **CRM**: relacionamento, limite de crédito (consultado pelo Financeiro na venda a prazo).
 - **RH**: começar por integração; folha completa depois.
+
+### 6.8 Acesso (usuários e permissões — RBAC)
+Controle de acesso ao sistema. Módulo **sempre ativo** (autenticação não é licenciável). Tabelas
+com prefixo `acs_`, em **duas camadas**:
+
+- **Dado de tenant** (herda `EntidadeBase`, filtra por `EmpresaId`, soft-delete/sync):
+  - **Usuario** (`acs_usuarios`): login (único por empresa, normalizado), nome, e-mail, **hash de
+    senha** (nunca em claro — porta `IHashSenha`/PBKDF2), `Ativo`, `DeveTrocarSenha`,
+    `StampSeguranca` (base para revogar token no futuro).
+  - **Perfil** (`acs_perfis`): papel nomeado; `Protegido` (o "Administrador" do seed) e
+    `ConcedeTodas` (super-perfil que dispensa listar cada permissão).
+  - **Vínculos N:N** (`acs_usuario_perfis`, `acs_perfil_funcionalidades`): usuário↔perfil e
+    perfil↔funcionalidade. Permissão efetiva do usuário = união dos perfis.
+- **Catálogo de capacidade** (referência GLOBAL — NÃO herda `EntidadeBase`, sem `EmpresaId`):
+  - **Modulo** (`acs_modulos`) e **Funcionalidade** (`acs_funcionalidades`), chave natural = código.
+  - **Fonte da verdade é o CÓDIGO**: cada módulo declara suas funcionalidades em `*.Contratos`
+    (constantes + `IModulo.Funcionalidades()`); o host agrega o manifesto dos módulos ativos e o
+    seeder do Acesso reconcilia para essas tabelas no startup (idempotente; o que sai do código
+    vira `Obsoleta`, nunca é apagado). Convenção: `<modulo>.<recurso>.<acao>`.
+
+No first-run de um tenant sem usuários, o seeder cria o perfil "Administrador" (`ConcedeTodas`) e
+um usuário admin inicial a partir de `Acesso:AdminInicial:Login`/`:Senha` (user-secrets/env — nunca
+hardcode; ausente ⇒ avisa e pula).
+
+```csharp
+public interface IAcessoConsulta
+{
+    Task<UsuarioDto?> ObterUsuario(string empresaId, string usuarioId);
+    Task<PerfilDto?>  ObterPerfil(string empresaId, string perfilId);
+}
+```
+
+**Fora de escopo desta etapa (autenticação):** login/JWT + refresh revogável, `IContextoUsuario`
+em Plataforma, middleware de autorização nos endpoints e a virada de `IContextoEmpresa` para
+*scoped*. O modelo de dados acima já nasce compatível (hash + `StampSeguranca`).
 
 ---
 
@@ -525,6 +569,6 @@ dotnet new xunit -o tests/Arquitetura.Tests
 
 Sugestão de prompt inicial para o Claude Code:
 > "Leia o CLAUDE.md. Implemente os BuildingBlocks (EntidadeBase, Result, IModulo,
-> Ulid helper) e o módulo Cadastros completo com Pessoa (papéis) e Produto, DbContext
-> SQLite, migration inicial e um teste de arquitetura garantindo que Cadastros.Dominio
+> Ulid helper) e o módulo Cadastros completo com Cliente e Produto, DbContext
+> Postgres, migration inicial e um teste de arquitetura garantindo que Cadastros.Dominio
 > não depende de internals de outros módulos."
