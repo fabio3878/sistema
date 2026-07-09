@@ -21,7 +21,7 @@ eventos, motor de sincronização, camada fiscal e ordem de implementação.
 | 5 | Sync multi-loja | **Opcional por config** | `SyncMode = LocalOnly` ou `LocalComSync`, para consolidar lojas numa central. Mesmo código. |
 | 6 | Mensageria interna | **Wolverine (MIT)** | Bus in-process + **outbox nativo**. MediatR/MassTransit viraram comerciais em 2025. |
 | 7 | Camada fiscal | **API terceirizada** (PlugNotas/Focus) | Reforma Tributária 2026 + NFS-e nacional. Não construir comunicação com SEFAZ. |
-| 8 | Frente desktop | **Tauri 2 + React/TS** | Reusa stack web, leve. Alternativa: PWA, se offline curto bastar. |
+| 8 | Frente desktop | **Tauri 2 + React/TS** | Reusa stack web, leve. Alternativa: PWA, se offline curto bastar. Padrão visual/UX em `DESIGN_1.md`. |
 | 9 | Hardware | **Agente Local .NET (Worker Service)** | SDKs de periféricos BR são .NET. Expõe localhost/WebSocket; UI fica burra de hardware. |
 | 10 | Back-office | **Next.js / Cloudflare** | Gestão e relatórios consolidados. |
 
@@ -427,6 +427,11 @@ Exemplos (mesmo binário):
 
 A frente é a "camada fina": monta a `Venda` do jeito da vertical (mesa/comanda no
 restaurante, OS na oficina, leitura rápida no PDV), mas o fluxo da seção 7 é o mesmo.
+
+> **Front-end (casca única).** Toda frente compartilha a **mesma casca visual** — muda só o
+> conjunto de módulos ativos. Sidebar, rotas e widgets são dirigidos por `ModuloAtivo` +
+> permissão (`func:<codigo>`). O padrão de design, UX e stack de UI (Tauri 2 + React/TS,
+> Tailwind + Radix/shadcn, tokens claro+escuro) é a regra em **`DESIGN_1.md`**.
 
 ---
 

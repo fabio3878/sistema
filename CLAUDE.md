@@ -36,6 +36,24 @@ Documento de arquitetura completo: `ARQUITETURA_1.md`.
   `RequireAuthorization(PoliticaAcesso.Funcionalidade("<codigo>"))`. **Handlers Wolverine tomam o
   tenant da mensagem** (`IEventoDominio.EmpresaId`), nunca do `IContextoEmpresa` scoped.
 
+## Design / Front-end (regra)
+Fonte da verdade visual: **`DESIGN_1.md`**. Front = **Tauri 2 + React/TS**. Toda tela nova segue
+esse documento — sem exceção. Essencial:
+- **Uma casca visual única** para todos os segmentos (loja, restaurante, clínica, autopeças...);
+  o que muda são os módulos ativos. Sidebar/rotas/widgets são **gated por licença**
+  (`licenca.ModuloAtivo`) **+ permissão** (claims `func:<codigo>` do JWT). O front consome o mesmo
+  catálogo de funcionalidades — **não inventa** permissão.
+- **Stack UI:** **Tailwind + Radix (padrão shadcn/ui)** — componentes copiados pro repo (código
+  nosso). DataTable = **TanStack Table**; formulários = **React Hook Form + Zod** (erros do
+  `Result` mapeados campo a campo); dados = **TanStack Query**; ⌘K = `cmdk`; ícones = `lucide-react`.
+- **Tudo é token** (CSS variables): tema **claro + escuro**; neutros dominam; accent **índigo
+  `#5B5BD6` com parcimônia** (azul só para estado "info"); **grid 8px**; **Inter** + números
+  tabulares; densidade desktop (corpo 14px, linha de tabela 36–40px).
+- **Drawer lateral > modal** para criar/editar; **teclado e menos cliques**; feedback imediato;
+  Skeleton no carregamento; muito espaço em branco.
+- **Proibido** o visual de "ERP clássico": excesso de bordas, gradientes, sombras pesadas, ícones
+  grandes, telas carregadas.
+
 ## Stack (versões fixadas em Directory.Packages.props)
 - .NET 10.0.9 · EF Core 10.0.9 (Postgres no servidor da loja; SQLite = contingência local futura)
 - Wolverine 6.16.0 (`WolverineFx`, `.Postgresql`, `.Sqlite`, `.Http`)
