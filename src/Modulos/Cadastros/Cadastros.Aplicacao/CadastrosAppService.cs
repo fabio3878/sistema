@@ -1,5 +1,4 @@
 using BuildingBlocks;
-using Cadastros.Contratos;
 using Cadastros.Dominio;
 
 namespace Cadastros.Aplicacao;
@@ -9,22 +8,30 @@ namespace Cadastros.Aplicacao;
 /// na unidade de trabalho. Não conhece EF Core.
 /// </summary>
 public sealed class CadastrosAppService(
-    IPessoaRepositorio pessoas,
+    IClienteRepositorio clientes,
     IProdutoRepositorio produtos,
     IUnidadeDeTrabalho uow)
 {
-    public async Task<Result<string>> CriarPessoa(
-        string empresaId, string nome, string documento, PapelPessoa papeis,
+    public async Task<Result<string>> CriarCliente(
+        string empresaId, DadosCliente dados, IReadOnlyList<DadosEndereco>? enderecos = null,
         CancellationToken ct = default)
     {
-        var criacao = Pessoa.Criar(empresaId, nome, documento, papeis);
+        var criacao = Cliente.Criar(empresaId, dados);
         if (criacao.Falhou)
             return Result<string>.Falha(criacao.Erro!);
 
-        var pessoa = criacao.Valor!;
-        await pessoas.Adicionar(pessoa, ct);
+        var cliente = criacao.Valor!;
+
+        foreach (var endereco in enderecos ?? [])
+        {
+            var add = cliente.AdicionarEndereco(endereco);
+            if (add.Falhou)
+                return Result<string>.Falha(add.Erro!);
+        }
+
+        await clientes.Adicionar(cliente, ct);
         await uow.Salvar(ct);
-        return Result<string>.Ok(pessoa.Id);
+        return Result<string>.Ok(cliente.Id);
     }
 
     public async Task<Result<string>> CriarProduto(

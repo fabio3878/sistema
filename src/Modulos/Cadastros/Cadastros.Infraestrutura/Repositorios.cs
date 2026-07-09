@@ -3,14 +3,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cadastros.Infraestrutura;
 
-/// <summary>Implementação EF Core das portas de Pessoa. Toda leitura filtra por EmpresaId (tenant).</summary>
-public sealed class PessoaRepositorio(CadastrosDbContext db) : IPessoaRepositorio
+/// <summary>Implementação EF Core das portas de Cliente. Toda leitura filtra por EmpresaId (tenant).</summary>
+public sealed class ClienteRepositorio(CadastrosDbContext db) : IClienteRepositorio
 {
-    public async Task Adicionar(Pessoa pessoa, CancellationToken ct = default) =>
-        await db.Pessoas.AddAsync(pessoa, ct);
+    public async Task Adicionar(Cliente cliente, CancellationToken ct = default) =>
+        await db.Clientes.AddAsync(cliente, ct);
 
-    public Task<Pessoa?> ObterPorId(string empresaId, string id, CancellationToken ct = default) =>
-        db.Pessoas.FirstOrDefaultAsync(p => p.EmpresaId == empresaId && p.Id == id, ct);
+    public Task<Cliente?> ObterPorId(string empresaId, string id, CancellationToken ct = default) =>
+        db.Clientes
+            .Include(c => c.Enderecos)
+            .FirstOrDefaultAsync(c => c.EmpresaId == empresaId && c.Id == id, ct);
+
+    public Task<Cliente?> ObterPorDocumento(string empresaId, string documento, CancellationToken ct = default) =>
+        db.Clientes
+            .Include(c => c.Enderecos)
+            .FirstOrDefaultAsync(c => c.EmpresaId == empresaId && c.Documento == documento, ct);
 }
 
 /// <summary>Implementação EF Core das portas de Produto.</summary>

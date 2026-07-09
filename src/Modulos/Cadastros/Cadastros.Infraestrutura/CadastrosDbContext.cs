@@ -1,37 +1,74 @@
-using BuildingBlocks;
 using Cadastros.Dominio;
 using Microsoft.EntityFrameworkCore;
+using Plataforma.Infraestrutura;
 
 namespace Cadastros.Infraestrutura;
 
 /// <summary>
 /// DbContext do módulo Cadastros. Cada módulo é dono das suas tabelas (prefixo cad_).
-/// Provider trocável (SQLite local / Postgres central) — configurado no host (seção 11).
+/// Provider trocável (Postgres servidor / SQLite local futuro) — configurado no host (seção 11).
 /// </summary>
 public sealed class CadastrosDbContext(DbContextOptions<CadastrosDbContext> options)
     : DbContext(options), IUnidadeDeTrabalho
 {
-    public DbSet<Pessoa> Pessoas => Set<Pessoa>();
+    public DbSet<Cliente> Clientes => Set<Cliente>();
+    public DbSet<ClienteEndereco> ClienteEnderecos => Set<ClienteEndereco>();
     public DbSet<Produto> Produtos => Set<Produto>();
 
     public Task<int> Salvar(CancellationToken ct = default) => SaveChangesAsync(ct);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Pessoa>(e =>
+        modelBuilder.Entity<Cliente>(e =>
         {
-            e.ToTable("cad_pessoas");
-            ConfigurarBase(e);
+            e.ToTable("cad_clientes");
+            e.ConfigurarEntidadeBase();
             e.Property(p => p.Nome).HasMaxLength(200).IsRequired();
             e.Property(p => p.Documento).HasMaxLength(14).IsRequired();
-            e.Property(p => p.Papeis).HasConversion<int>();
-            e.HasIndex(p => new { p.EmpresaId, p.Documento });
+            e.Property(p => p.TipoPessoa).HasConversion<int>();
+            e.Property(p => p.NomeFantasia).HasMaxLength(200);
+            e.Property(p => p.Email).HasMaxLength(200);
+            e.Property(p => p.Telefone).HasMaxLength(20);
+            e.Property(p => p.Rg).HasMaxLength(20);
+            e.Property(p => p.OrgaoEmissorRg).HasMaxLength(20);
+            e.Property(p => p.InscricaoEstadual).HasMaxLength(20);
+            e.Property(p => p.InscricaoMunicipal).HasMaxLength(20);
+            e.Property(p => p.IndicadorIe).HasConversion<int>();
+            e.Property(p => p.RegimeTributario).HasConversion<int>();
+            e.Property(p => p.LimiteCredito).HasPrecision(18, 4);
+            e.Property(p => p.Observacoes).HasMaxLength(1000);
+            e.HasIndex(p => new { p.EmpresaId, p.Documento }).IsUnique();
+
+            // Endereços: 1:N, agregados sob o Cliente. Cascata segue o ciclo de vida do cliente.
+            e.HasMany(p => p.Enderecos)
+                .WithOne()
+                .HasForeignKey(en => en.ClienteId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.Navigation(p => p.Enderecos).UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        modelBuilder.Entity<ClienteEndereco>(e =>
+        {
+            e.ToTable("cad_cliente_enderecos");
+            e.ConfigurarEntidadeBase();
+            e.Property(p => p.ClienteId).HasMaxLength(26).IsRequired();
+            e.Property(p => p.Tipo).HasConversion<int>();
+            e.Property(p => p.Cep).HasMaxLength(8).IsRequired();
+            e.Property(p => p.Logradouro).HasMaxLength(200).IsRequired();
+            e.Property(p => p.Numero).HasMaxLength(20).IsRequired();
+            e.Property(p => p.Complemento).HasMaxLength(100);
+            e.Property(p => p.Bairro).HasMaxLength(100).IsRequired();
+            e.Property(p => p.Municipio).HasMaxLength(100).IsRequired();
+            e.Property(p => p.Uf).HasMaxLength(2).IsFixedLength().IsRequired();
+            e.Property(p => p.CodigoIbgeMunicipio).HasMaxLength(7).IsRequired();
+            e.Property(p => p.Pais).HasMaxLength(60).IsRequired();
+            e.HasIndex(p => new { p.EmpresaId, p.ClienteId });
         });
 
         modelBuilder.Entity<Produto>(e =>
         {
             e.ToTable("cad_produtos");
-            ConfigurarBase(e);
+            e.ConfigurarEntidadeBase();
             e.Property(p => p.Sku).HasMaxLength(60).IsRequired();
             e.Property(p => p.Descricao).HasMaxLength(300).IsRequired();
             e.Property(p => p.CodigoBarras).HasMaxLength(60);
@@ -43,19 +80,5 @@ public sealed class CadastrosDbContext(DbContextOptions<CadastrosDbContext> opti
         });
 
         base.OnModelCreating(modelBuilder);
-    }
-
-    /// <summary>Configura o que TODA entidade sincronizável tem (PK ULID, tenant, soft delete).</summary>
-    private static void ConfigurarBase<TEntidade>(
-        Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TEntidade> e)
-        where TEntidade : EntidadeBase
-    {
-        e.HasKey(x => x.Id);
-        e.Property(x => x.Id).HasMaxLength(26).IsRequired();
-        e.Property(x => x.EmpresaId).HasMaxLength(26).IsRequired();
-        e.Property(x => x.OrigemId).HasMaxLength(26);
-        e.HasIndex(x => x.EmpresaId);
-        // Soft delete: some da query por padrão quem está excluído (seção 4.1).
-        e.HasQueryFilter(x => !x.Excluido);
     }
 }

@@ -4,10 +4,15 @@ namespace Cadastros.Dominio;
 /// Portas de persistência (o Dominio define, a Infraestrutura implementa).
 /// Assim a Aplicacao orquestra sem conhecer EF Core.
 /// </summary>
-public interface IPessoaRepositorio
+public interface IClienteRepositorio
 {
-    Task Adicionar(Pessoa pessoa, CancellationToken ct = default);
-    Task<Pessoa?> ObterPorId(string empresaId, string id, CancellationToken ct = default);
+    Task Adicionar(Cliente cliente, CancellationToken ct = default);
+
+    /// <summary>Carrega o cliente com seus endereços (agregado completo).</summary>
+    Task<Cliente?> ObterPorId(string empresaId, string id, CancellationToken ct = default);
+
+    /// <summary>Busca por documento (só dígitos) para checar duplicidade no cadastro.</summary>
+    Task<Cliente?> ObterPorDocumento(string empresaId, string documento, CancellationToken ct = default);
 }
 
 public interface IProdutoRepositorio
