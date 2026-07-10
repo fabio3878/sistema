@@ -76,6 +76,106 @@ public static class CadastrosEndpoints
             return r.Sucesso ? Results.NoContent() : Results.BadRequest(new { erro = r.Erro });
         }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesCadastro.EditarCliente));
 
+        // Unidades de medida — referência global (não-tenant): basta estar autenticado (combobox do produto).
+        grupo.MapGet("/unidades", async (ICadastrosConsulta consulta, CancellationToken ct) =>
+            Results.Ok(await consulta.ListarUnidades(ct))).RequireAuthorization();
+
+        // Produtos — gating pelo módulo Estoque (est.produto.*), embora o cadastro resida em Cadastros.
+        grupo.MapGet("/produtos", async (
+            ICadastrosConsulta consulta, IContextoEmpresa empresa, CancellationToken ct,
+            string? busca, string? situacao) =>
+        {
+            var filtro = new FiltroProdutos(busca, SituacaoParaAtivo(situacao));
+            return Results.Ok(await consulta.ListarProdutos(empresa.EmpresaId, filtro, ct));
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesEstoque.ListarProduto));
+
+        grupo.MapGet("/produtos/{id}", async (
+            string id, ICadastrosConsulta consulta, IContextoEmpresa empresa, CancellationToken ct) =>
+        {
+            var produto = await consulta.ObterProduto(empresa.EmpresaId, id, ct);
+            return produto is null ? Results.NotFound() : Results.Ok(produto);
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesEstoque.ListarProduto));
+
+        grupo.MapPost("/produtos", async (
+            ProdutoEntradaDto req, CadastrosAppService svc, IContextoEmpresa empresa, CancellationToken ct) =>
+        {
+            var r = await svc.CriarProduto(empresa.EmpresaId, req, ct);
+            return r.Sucesso ? Results.Ok(new { id = r.Valor }) : Results.BadRequest(new { erro = r.Erro });
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesEstoque.CriarProduto));
+
+        grupo.MapPut("/produtos/{id}", async (
+            string id, ProdutoEntradaDto req, CadastrosAppService svc, IContextoEmpresa empresa, CancellationToken ct) =>
+        {
+            var r = await svc.AtualizarProduto(empresa.EmpresaId, id, req, ct);
+            return r.Sucesso ? Results.NoContent() : Results.BadRequest(new { erro = r.Erro });
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesEstoque.EditarProduto));
+
+        grupo.MapPost("/produtos/{id}/ativar", async (
+            string id, CadastrosAppService svc, IContextoEmpresa empresa, CancellationToken ct) =>
+        {
+            var r = await svc.AlterarSituacaoProduto(empresa.EmpresaId, id, ativo: true, ct);
+            return r.Sucesso ? Results.NoContent() : Results.BadRequest(new { erro = r.Erro });
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesEstoque.EditarProduto));
+
+        grupo.MapPost("/produtos/{id}/inativar", async (
+            string id, CadastrosAppService svc, IContextoEmpresa empresa, CancellationToken ct) =>
+        {
+            var r = await svc.AlterarSituacaoProduto(empresa.EmpresaId, id, ativo: false, ct);
+            return r.Sucesso ? Results.NoContent() : Results.BadRequest(new { erro = r.Erro });
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesEstoque.EditarProduto));
+
+        // Serviços — cadastro próprio, gating pelo módulo Cadastros (cad.servico.*).
+        grupo.MapGet("/servicos", async (
+            ICadastrosConsulta consulta, IContextoEmpresa empresa, CancellationToken ct,
+            string? busca, string? situacao) =>
+        {
+            var filtro = new FiltroServicos(busca, SituacaoParaAtivo(situacao));
+            return Results.Ok(await consulta.ListarServicos(empresa.EmpresaId, filtro, ct));
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesCadastro.ListarServico));
+
+        grupo.MapGet("/servicos/{id}", async (
+            string id, ICadastrosConsulta consulta, IContextoEmpresa empresa, CancellationToken ct) =>
+        {
+            var servico = await consulta.ObterServico(empresa.EmpresaId, id, ct);
+            return servico is null ? Results.NotFound() : Results.Ok(servico);
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesCadastro.ListarServico));
+
+        grupo.MapPost("/servicos", async (
+            ServicoEntradaDto req, CadastrosAppService svc, IContextoEmpresa empresa, CancellationToken ct) =>
+        {
+            var r = await svc.CriarServico(empresa.EmpresaId, req, ct);
+            return r.Sucesso ? Results.Ok(new { id = r.Valor }) : Results.BadRequest(new { erro = r.Erro });
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesCadastro.CriarServico));
+
+        grupo.MapPut("/servicos/{id}", async (
+            string id, ServicoEntradaDto req, CadastrosAppService svc, IContextoEmpresa empresa, CancellationToken ct) =>
+        {
+            var r = await svc.AtualizarServico(empresa.EmpresaId, id, req, ct);
+            return r.Sucesso ? Results.NoContent() : Results.BadRequest(new { erro = r.Erro });
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesCadastro.EditarServico));
+
+        grupo.MapPost("/servicos/{id}/ativar", async (
+            string id, CadastrosAppService svc, IContextoEmpresa empresa, CancellationToken ct) =>
+        {
+            var r = await svc.AlterarSituacaoServico(empresa.EmpresaId, id, ativo: true, ct);
+            return r.Sucesso ? Results.NoContent() : Results.BadRequest(new { erro = r.Erro });
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesCadastro.EditarServico));
+
+        grupo.MapPost("/servicos/{id}/inativar", async (
+            string id, CadastrosAppService svc, IContextoEmpresa empresa, CancellationToken ct) =>
+        {
+            var r = await svc.AlterarSituacaoServico(empresa.EmpresaId, id, ativo: false, ct);
+            return r.Sucesso ? Results.NoContent() : Results.BadRequest(new { erro = r.Erro });
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesCadastro.EditarServico));
+
         return app;
     }
+
+    /// <summary>Converte o filtro de situação da query ("ativo"/"inativo") em bool? (nulo = todos).</summary>
+    private static bool? SituacaoParaAtivo(string? situacao) => situacao?.ToLowerInvariant() switch
+    {
+        "ativo" => true,
+        "inativo" => false,
+        _ => null,
+    };
 }

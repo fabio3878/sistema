@@ -24,14 +24,20 @@ public sealed class CadastrosModulo : IModulo
         services.AddScoped<IUnidadeDeTrabalho>(sp => sp.GetRequiredService<CadastrosDbContext>());
         services.AddScoped<IClienteRepositorio, ClienteRepositorio>();
         services.AddScoped<IProdutoRepositorio, ProdutoRepositorio>();
+        services.AddScoped<IServicoRepositorio, ServicoRepositorio>();
         services.AddScoped<ILocalidadeRepositorio, LocalidadeRepositorio>();
+        services.AddScoped<IUnidadeRepositorio, UnidadeRepositorio>();
 
         services.AddScoped<ICadastrosConsulta, CadastrosConsulta>();
         services.AddScoped<CadastrosAppService>();
         services.AddScoped<SeederLocalidades>();
+        services.AddScoped<SeederUnidades>();
     }
 
     public void RegistrarMigrations(MigrationRegistry registry) => registry.Adicionar<CadastrosDbContext>();
 
-    public IEnumerable<FuncionalidadeManifesto> Funcionalidades() => FuncionalidadesCadastro.Manifesto();
+    // Cadastros declara também as funcionalidades de Produto sob o módulo "est" (Estoque): o
+    // produto mora aqui (master data), mas seu gating é do Estoque, que o consome (ver DESIGN_1 §5).
+    public IEnumerable<FuncionalidadeManifesto> Funcionalidades() =>
+        [.. FuncionalidadesCadastro.Manifesto(), .. FuncionalidadesEstoque.Manifesto()];
 }

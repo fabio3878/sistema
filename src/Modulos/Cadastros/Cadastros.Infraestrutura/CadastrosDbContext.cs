@@ -14,10 +14,12 @@ public sealed class CadastrosDbContext(DbContextOptions<CadastrosDbContext> opti
     public DbSet<Cliente> Clientes => Set<Cliente>();
     public DbSet<ClienteEndereco> ClienteEnderecos => Set<ClienteEndereco>();
     public DbSet<Produto> Produtos => Set<Produto>();
+    public DbSet<Servico> Servicos => Set<Servico>();
 
-    // Tier B — referência global (IBGE), sem EmpresaId/soft delete/ULID.
+    // Tier B — referência global (IBGE + unidades), sem EmpresaId/soft delete/ULID.
     public DbSet<Estado> Estados => Set<Estado>();
     public DbSet<Municipio> Municipios => Set<Municipio>();
+    public DbSet<Unidade> Unidades => Set<Unidade>();
 
     public Task<int> Salvar(CancellationToken ct = default) => SaveChangesAsync(ct);
 
@@ -79,14 +81,29 @@ public sealed class CadastrosDbContext(DbContextOptions<CadastrosDbContext> opti
         {
             e.ToTable("cad_produtos");
             e.ConfigurarEntidadeBase();
-            e.Property(p => p.Sku).HasMaxLength(60).IsRequired();
+            e.Property(p => p.CodigoInterno).HasMaxLength(60);
             e.Property(p => p.Descricao).HasMaxLength(300).IsRequired();
             e.Property(p => p.CodigoBarras).HasMaxLength(60);
+            e.Property(p => p.Unidade).HasMaxLength(6).IsRequired();
             e.Property(p => p.Ncm).HasMaxLength(8).IsRequired();
+            e.Property(p => p.Cest).HasMaxLength(7);
+            e.Property(p => p.Origem).HasConversion<int>();
             // Precisão fixa para dinheiro, provider-neutra: cada provider escolhe seu tipo nativo
             // (numeric no Postgres; no SQLite, de tipagem frouxa, força o mapeamento explícito).
             e.Property(p => p.PrecoVenda).HasPrecision(18, 4);
-            e.HasIndex(p => new { p.EmpresaId, p.Sku }).IsUnique();
+            // Único por empresa quando informado; no Postgres NULLs são distintos (vários sem código convivem).
+            e.HasIndex(p => new { p.EmpresaId, p.CodigoInterno }).IsUnique();
+        });
+
+        modelBuilder.Entity<Servico>(e =>
+        {
+            e.ToTable("cad_servicos");
+            e.ConfigurarEntidadeBase();
+            e.Property(s => s.CodigoInterno).HasMaxLength(60);
+            e.Property(s => s.Descricao).HasMaxLength(300).IsRequired();
+            e.Property(s => s.Unidade).HasMaxLength(6).IsRequired();
+            e.Property(s => s.PrecoVenda).HasPrecision(18, 4);
+            e.HasIndex(s => new { s.EmpresaId, s.CodigoInterno }).IsUnique();
         });
 
         // Tier B — referência global IBGE (chave natural, sem ConfigurarEntidadeBase — como acs_modulos).
@@ -107,6 +124,14 @@ public sealed class CadastrosDbContext(DbContextOptions<CadastrosDbContext> opti
             e.Property(p => p.Nome).HasMaxLength(120).IsRequired();
             e.Property(p => p.Uf).HasMaxLength(2).IsRequired();
             e.HasIndex(p => p.Uf);
+        });
+
+        modelBuilder.Entity<Unidade>(e =>
+        {
+            e.ToTable("cad_unidades");
+            e.HasKey(p => p.Sigla);
+            e.Property(p => p.Sigla).HasMaxLength(6);
+            e.Property(p => p.Descricao).HasMaxLength(60).IsRequired();
         });
 
         base.OnModelCreating(modelBuilder);

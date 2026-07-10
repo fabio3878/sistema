@@ -35,3 +35,20 @@ public enum RegimeTributario
     SimplesExcessoSublimite = 2,
     Normal = 3,
 }
+
+/// <summary>
+/// Origem da mercadoria (campo <c>orig</c> da NF-e — compõe o CST/CSOSN do ICMS). Indica se é
+/// nacional, importada e por qual via. Valores conforme a tabela oficial (0 a 8).
+/// </summary>
+public enum OrigemMercadoria
+{
+    Nacional = 0,
+    EstrangeiraImportacaoDireta = 1,
+    EstrangeiraAdquiridaMercadoInterno = 2,
+    NacionalImportacaoSuperior40 = 3,
+    NacionalProcessosBasicos = 4,
+    NacionalImportacaoInferiorIgual40 = 5,
+    EstrangeiraImportacaoDiretaSemSimilar = 6,
+    EstrangeiraAdquiridaMercadoInternoSemSimilar = 7,
+    NacionalImportacaoSuperior70 = 8,
+}

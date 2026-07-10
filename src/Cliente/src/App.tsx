@@ -9,6 +9,8 @@ import { LoginPage } from '@/paginas/login'
 import { AppShell } from '@/components/shell/app-shell'
 import { DashboardPage } from '@/paginas/dashboard'
 import { ClientesPage } from '@/paginas/clientes'
+import { ProdutosPage } from '@/paginas/produtos'
+import { ServicosPage } from '@/paginas/servicos'
 import { PlaceholderPage } from '@/paginas/placeholder'
 
 /** Decide entre login e casca conforme o estado de autenticação. */
@@ -31,7 +33,8 @@ function Raiz() {
         <Routes>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/clientes" element={<ClientesPage />} />
-          <Route path="/produtos" element={<PlaceholderPage titulo="Produtos" />} />
+          <Route path="/produtos" element={<ProdutosPage />} />
+          <Route path="/servicos" element={<ServicosPage />} />
           <Route path="/vendas" element={<PlaceholderPage titulo="Vendas" />} />
           <Route path="/financeiro" element={<PlaceholderPage titulo="Financeiro" />} />
         </Routes>

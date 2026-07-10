@@ -121,12 +121,76 @@ public sealed record ClienteEntradaDto(
     DateTimeOffset? DataAceiteLgpd = null,
     IReadOnlyList<EnderecoEntradaDto>? Enderecos = null);
 
-/// <summary>Projeção pública de um Produto/Serviço.</summary>
+/// <summary>Projeção pública de um Produto (mercadoria).</summary>
 public sealed record ProdutoDto(
     string Id,
     string EmpresaId,
-    string Sku,
+    string? CodigoInterno,
     string Descricao,
     string? CodigoBarras,
+    string Unidade,
     string Ncm,
-    decimal PrecoVenda);
+    string? Cest,
+    OrigemMercadoria Origem,
+    decimal PrecoVenda,
+    bool Ativo);
+
+/// <summary>Linha enxuta da listagem de produtos.</summary>
+public sealed record ProdutoResumoDto(
+    string Id,
+    string? CodigoInterno,
+    string Descricao,
+    string? CodigoBarras,
+    string Unidade,
+    decimal PrecoVenda,
+    bool Ativo);
+
+/// <summary>Filtros da listagem de produtos. Tudo opcional (nulo = não filtra).</summary>
+public sealed record FiltroProdutos(
+    string? Busca = null,
+    bool? Ativo = null);
+
+/// <summary>Payload de criação/edição de um Produto.</summary>
+public sealed record ProdutoEntradaDto(
+    string Descricao,
+    string Ncm,
+    decimal PrecoVenda,
+    string Unidade,
+    OrigemMercadoria Origem = OrigemMercadoria.Nacional,
+    string? CodigoInterno = null,
+    string? CodigoBarras = null,
+    string? Cest = null);
+
+/// <summary>Projeção pública de um Serviço.</summary>
+public sealed record ServicoDto(
+    string Id,
+    string EmpresaId,
+    string? CodigoInterno,
+    string Descricao,
+    string Unidade,
+    decimal PrecoVenda,
+    bool Ativo);
+
+/// <summary>Linha enxuta da listagem de serviços.</summary>
+public sealed record ServicoResumoDto(
+    string Id,
+    string? CodigoInterno,
+    string Descricao,
+    string Unidade,
+    decimal PrecoVenda,
+    bool Ativo);
+
+/// <summary>Filtros da listagem de serviços. Tudo opcional (nulo = não filtra).</summary>
+public sealed record FiltroServicos(
+    string? Busca = null,
+    bool? Ativo = null);
+
+/// <summary>Payload de criação/edição de um Serviço.</summary>
+public sealed record ServicoEntradaDto(
+    string Descricao,
+    decimal PrecoVenda,
+    string Unidade,
+    string? CodigoInterno = null);
+
+/// <summary>Unidade de medida (referência global) — para o combobox de produto/serviço.</summary>
+public sealed record UnidadeDto(string Sigla, string Descricao, int CasasDecimais, bool Fracionavel);

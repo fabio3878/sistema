@@ -2,6 +2,7 @@ import {
   LayoutDashboard,
   Users,
   Boxes,
+  Wrench,
   ShoppingCart,
   Wallet,
   type LucideIcon,
@@ -44,6 +45,13 @@ export const NAV: ItemNav[] = [
     icone: Boxes,
     modulo: 'est',
     funcionalidade: 'est.produto.listar',
+  },
+  {
+    rota: '/servicos',
+    titulo: 'Serviços',
+    icone: Wrench,
+    modulo: 'cad',
+    funcionalidade: 'cad.servico.listar',
   },
   {
     rota: '/vendas',

@@ -78,9 +78,12 @@ await AplicarMigrationsDosModulosAsync(app);
 // no first-run do tenant, cria o admin inicial (segredo em Acesso:AdminInicial:*).
 await SemearAcessoAsync(app, manifestoFuncionalidades);
 
-// Semeia as tabelas de referência IBGE (estados/municípios) do módulo Cadastros, se ativo.
+// Semeia as tabelas de referência do módulo Cadastros (IBGE + unidades de medida), se ativo.
 if (licenca.ModuloAtivo("Cadastros"))
+{
     await SemearLocalidadesAsync(app);
+    await SemearUnidadesAsync(app);
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -108,6 +111,13 @@ static async Task SemearLocalidadesAsync(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
     var seeder = scope.ServiceProvider.GetRequiredService<Cadastros.Infraestrutura.SeederLocalidades>();
+    await seeder.ExecutarAsync();
+}
+
+static async Task SemearUnidadesAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<Cadastros.Infraestrutura.SeederUnidades>();
     await seeder.ExecutarAsync();
 }
 

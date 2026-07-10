@@ -29,10 +29,37 @@ public interface ILocalidadeRepositorio
     Task SemearAsync(IEnumerable<Estado> estados, IEnumerable<Municipio> municipios, CancellationToken ct = default);
 }
 
+/// <summary>Porta da tabela de referência global de unidades de medida (não-tenant).</summary>
+public interface IUnidadeRepositorio
+{
+    Task<IReadOnlyList<Unidade>> Listar(CancellationToken ct = default);
+    Task<Unidade?> ObterPorSigla(string sigla, CancellationToken ct = default);
+    Task<bool> Vazio(CancellationToken ct = default);
+    Task SemearAsync(IEnumerable<Unidade> unidades, CancellationToken ct = default);
+}
+
 public interface IProdutoRepositorio
 {
     Task Adicionar(Produto produto, CancellationToken ct = default);
     Task<Produto?> ObterPorId(string empresaId, string id, CancellationToken ct = default);
+
+    /// <summary>Busca por código interno (único por empresa) para checar duplicidade no cadastro.</summary>
+    Task<Produto?> ObterPorCodigo(string empresaId, string codigo, CancellationToken ct = default);
+
+    /// <summary>Lista os produtos da empresa aplicando os filtros informados.</summary>
+    Task<IReadOnlyList<Produto>> Listar(string empresaId, FiltroProdutos filtro, CancellationToken ct = default);
+}
+
+public interface IServicoRepositorio
+{
+    Task Adicionar(Servico servico, CancellationToken ct = default);
+    Task<Servico?> ObterPorId(string empresaId, string id, CancellationToken ct = default);
+
+    /// <summary>Busca por código interno (único por empresa) para checar duplicidade no cadastro.</summary>
+    Task<Servico?> ObterPorCodigo(string empresaId, string codigo, CancellationToken ct = default);
+
+    /// <summary>Lista os serviços da empresa aplicando os filtros informados.</summary>
+    Task<IReadOnlyList<Servico>> Listar(string empresaId, FiltroServicos filtro, CancellationToken ct = default);
 }
 
 /// <summary>Confirma as mutações pendentes numa transação (Unit of Work do módulo).</summary>

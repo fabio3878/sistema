@@ -12,6 +12,8 @@ namespace Cadastros.Aplicacao;
 public sealed class CadastrosAppService(
     IClienteRepositorio clientes,
     IProdutoRepositorio produtos,
+    IServicoRepositorio servicos,
+    IUnidadeRepositorio unidades,
     IUnidadeDeTrabalho uow)
 {
     public async Task<Result<string>> CriarCliente(
@@ -82,18 +84,145 @@ public sealed class CadastrosAppService(
     }
 
     public async Task<Result<string>> CriarProduto(
-        string empresaId, string sku, string descricao, string ncm, decimal precoVenda,
-        string? codigoBarras = null, CancellationToken ct = default)
+        string empresaId, ProdutoEntradaDto dados, CancellationToken ct = default)
     {
-        var criacao = Produto.Criar(empresaId, sku, descricao, ncm, precoVenda, codigoBarras);
+        var unidadeValida = await UnidadeExiste(dados.Unidade, ct);
+        if (unidadeValida.Falhou)
+            return Result<string>.Falha(unidadeValida.Erro!);
+
+        var criacao = Produto.Criar(empresaId, ParaDados(dados));
         if (criacao.Falhou)
             return Result<string>.Falha(criacao.Erro!);
 
         var produto = criacao.Valor!;
+
+        // Código interno é único por empresa quando informado: pré-checa para mensagem amigável.
+        if (produto.CodigoInterno is not null &&
+            await produtos.ObterPorCodigo(empresaId, produto.CodigoInterno, ct) is not null)
+            return Result<string>.Falha("Já existe um produto com este código interno.");
+
         await produtos.Adicionar(produto, ct);
         await uow.Salvar(ct);
         return Result<string>.Ok(produto.Id);
     }
+
+    public async Task<Result> AtualizarProduto(
+        string empresaId, string produtoId, ProdutoEntradaDto dados, CancellationToken ct = default)
+    {
+        var produto = await produtos.ObterPorId(empresaId, produtoId, ct);
+        if (produto is null)
+            return Result.Falha("Produto não encontrado.");
+
+        var unidadeValida = await UnidadeExiste(dados.Unidade, ct);
+        if (unidadeValida.Falhou)
+            return unidadeValida;
+
+        var atualizacao = produto.Atualizar(ParaDados(dados));
+        if (atualizacao.Falhou)
+            return atualizacao;
+
+        // Se o código mudou, garante que não colide com outro produto da empresa.
+        if (produto.CodigoInterno is not null)
+        {
+            var outro = await produtos.ObterPorCodigo(empresaId, produto.CodigoInterno, ct);
+            if (outro is not null && outro.Id != produtoId)
+                return Result.Falha("Já existe um produto com este código interno.");
+        }
+
+        await uow.Salvar(ct);
+        return Result.Ok();
+    }
+
+    public async Task<Result> AlterarSituacaoProduto(
+        string empresaId, string produtoId, bool ativo, CancellationToken ct = default)
+    {
+        var produto = await produtos.ObterPorId(empresaId, produtoId, ct);
+        if (produto is null)
+            return Result.Falha("Produto não encontrado.");
+
+        if (ativo) produto.Ativar();
+        else produto.Inativar();
+
+        await uow.Salvar(ct);
+        return Result.Ok();
+    }
+
+    public async Task<Result<string>> CriarServico(
+        string empresaId, ServicoEntradaDto dados, CancellationToken ct = default)
+    {
+        var unidadeValida = await UnidadeExiste(dados.Unidade, ct);
+        if (unidadeValida.Falhou)
+            return Result<string>.Falha(unidadeValida.Erro!);
+
+        var criacao = Servico.Criar(empresaId, ParaDados(dados));
+        if (criacao.Falhou)
+            return Result<string>.Falha(criacao.Erro!);
+
+        var servico = criacao.Valor!;
+
+        if (servico.CodigoInterno is not null &&
+            await servicos.ObterPorCodigo(empresaId, servico.CodigoInterno, ct) is not null)
+            return Result<string>.Falha("Já existe um serviço com este código interno.");
+
+        await servicos.Adicionar(servico, ct);
+        await uow.Salvar(ct);
+        return Result<string>.Ok(servico.Id);
+    }
+
+    public async Task<Result> AtualizarServico(
+        string empresaId, string servicoId, ServicoEntradaDto dados, CancellationToken ct = default)
+    {
+        var servico = await servicos.ObterPorId(empresaId, servicoId, ct);
+        if (servico is null)
+            return Result.Falha("Serviço não encontrado.");
+
+        var unidadeValida = await UnidadeExiste(dados.Unidade, ct);
+        if (unidadeValida.Falhou)
+            return unidadeValida;
+
+        var atualizacao = servico.Atualizar(ParaDados(dados));
+        if (atualizacao.Falhou)
+            return atualizacao;
+
+        if (servico.CodigoInterno is not null)
+        {
+            var outro = await servicos.ObterPorCodigo(empresaId, servico.CodigoInterno, ct);
+            if (outro is not null && outro.Id != servicoId)
+                return Result.Falha("Já existe um serviço com este código interno.");
+        }
+
+        await uow.Salvar(ct);
+        return Result.Ok();
+    }
+
+    public async Task<Result> AlterarSituacaoServico(
+        string empresaId, string servicoId, bool ativo, CancellationToken ct = default)
+    {
+        var servico = await servicos.ObterPorId(empresaId, servicoId, ct);
+        if (servico is null)
+            return Result.Falha("Serviço não encontrado.");
+
+        if (ativo) servico.Ativar();
+        else servico.Inativar();
+
+        await uow.Salvar(ct);
+        return Result.Ok();
+    }
+
+    private async Task<Result> UnidadeExiste(string sigla, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(sigla))
+            return Result.Falha("Unidade é obrigatória.");
+        if (await unidades.ObterPorSigla(sigla, ct) is null)
+            return Result.Falha($"Unidade '{sigla}' não existe no cadastro.");
+        return Result.Ok();
+    }
+
+    private static DadosProduto ParaDados(ProdutoEntradaDto d) =>
+        new(d.Descricao, d.Ncm, d.PrecoVenda, d.Unidade, d.Origem, d.CodigoInterno, d.CodigoBarras, d.Cest);
+
+    private static DadosServico ParaDados(ServicoEntradaDto d) =>
+        new(d.Descricao, d.PrecoVenda, d.Unidade, d.CodigoInterno);
 
     private static DadosCliente ParaDados(ClienteEntradaDto d) =>
         new(d.Nome, d.Documento, d.TipoPessoa, d.IndicadorIe, d.NomeFantasia,
