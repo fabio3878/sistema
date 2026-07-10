@@ -18,6 +18,7 @@
     <Project Path="src/Modulos/Cadastros/Cadastros.Aplicacao/Cadastros.Aplicacao.csproj" />
     <Project Path="src/Modulos/Cadastros/Cadastros.Contratos/Cadastros.Contratos.csproj" />
     <Project Path="src/Modulos/Cadastros/Cadastros.Dominio/Cadastros.Dominio.csproj" />
+    <Project Path="src/Modulos/Cadastros/Cadastros.Http/Cadastros.Http.csproj" />
     <Project Path="src/Modulos/Cadastros/Cadastros.Infraestrutura/Cadastros.Infraestrutura.csproj" />
   </Folder>
   <Folder Name="/src/Plataforma/">

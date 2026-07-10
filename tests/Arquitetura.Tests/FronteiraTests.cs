@@ -88,6 +88,20 @@ public class FronteiraTests
     }
 
     [Fact]
+    public void Cadastros_Http_nao_depende_de_infra_nem_de_outros_modulos()
+    {
+        var resultado = Types.InAssembly(typeof(Cadastros.Http.CadastrosEndpoints).Assembly)
+            .ShouldNot().HaveDependencyOnAny(
+                "Cadastros.Infraestrutura",
+                "Acesso.Dominio",
+                "Acesso.Infraestrutura",
+                "Microsoft.EntityFrameworkCore")
+            .GetResult();
+
+        Assert.True(resultado.IsSuccessful, Falhas(resultado));
+    }
+
+    [Fact]
     public void Plataforma_Dominio_nao_depende_de_aspnet_nem_de_ef()
     {
         var resultado = Types.InAssembly(typeof(Plataforma.Dominio.IContextoUsuario).Assembly)

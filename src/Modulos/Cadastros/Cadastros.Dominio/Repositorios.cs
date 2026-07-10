@@ -1,3 +1,5 @@
+using Cadastros.Contratos;
+
 namespace Cadastros.Dominio;
 
 /// <summary>
@@ -13,6 +15,18 @@ public interface IClienteRepositorio
 
     /// <summary>Busca por documento (só dígitos) para checar duplicidade no cadastro.</summary>
     Task<Cliente?> ObterPorDocumento(string empresaId, string documento, CancellationToken ct = default);
+
+    /// <summary>Lista os clientes da empresa (com endereços), aplicando os filtros informados.</summary>
+    Task<IReadOnlyList<Cliente>> Listar(string empresaId, FiltroClientes filtro, CancellationToken ct = default);
+}
+
+/// <summary>Porta de leitura das tabelas de referência IBGE (dado global, não-tenant).</summary>
+public interface ILocalidadeRepositorio
+{
+    Task<IReadOnlyList<Estado>> ListarEstados(CancellationToken ct = default);
+    Task<IReadOnlyList<Municipio>> ListarMunicipios(string uf, CancellationToken ct = default);
+    Task<bool> Vazio(CancellationToken ct = default);
+    Task SemearAsync(IEnumerable<Estado> estados, IEnumerable<Municipio> municipios, CancellationToken ct = default);
 }
 
 public interface IProdutoRepositorio

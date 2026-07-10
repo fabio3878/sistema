@@ -24,9 +24,11 @@ public sealed class CadastrosModulo : IModulo
         services.AddScoped<IUnidadeDeTrabalho>(sp => sp.GetRequiredService<CadastrosDbContext>());
         services.AddScoped<IClienteRepositorio, ClienteRepositorio>();
         services.AddScoped<IProdutoRepositorio, ProdutoRepositorio>();
+        services.AddScoped<ILocalidadeRepositorio, LocalidadeRepositorio>();
 
         services.AddScoped<ICadastrosConsulta, CadastrosConsulta>();
         services.AddScoped<CadastrosAppService>();
+        services.AddScoped<SeederLocalidades>();
     }
 
     public void RegistrarMigrations(MigrationRegistry registry) => registry.Adicionar<CadastrosDbContext>();

@@ -1,6 +1,8 @@
+using System.Text.Json.Serialization;
 using Acesso.Http;
 using Acesso.Infraestrutura;
 using BuildingBlocks;
+using Cadastros.Http;
 using Cadastros.Infraestrutura;
 using JasperFx;
 using JasperFx.Resources;
@@ -23,6 +25,10 @@ var opcoesBanco = builder.Configuration.GetSection(OpcoesBanco.Secao).Get<Opcoes
 // autorização por funcionalidade. Lê o tenant do servidor de Plataforma:EmpresaId.
 builder.Services.AdicionarPlataforma(builder.Configuration);
 builder.Services.AdicionarAutorizacaoPorFuncionalidade();
+
+// Enums no JSON como string ("Fisica", "Principal", ...) — contrato limpo para o front.
+builder.Services.ConfigureHttpJsonOptions(o =>
+    o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 // Descoberta de módulos: o host só ativa os habilitados pela licença (seção 8).
 // Novos módulos entram nesta lista — cada um se auto-registra via IModulo.
@@ -72,6 +78,10 @@ await AplicarMigrationsDosModulosAsync(app);
 // no first-run do tenant, cria o admin inicial (segredo em Acesso:AdminInicial:*).
 await SemearAcessoAsync(app, manifestoFuncionalidades);
 
+// Semeia as tabelas de referência IBGE (estados/municípios) do módulo Cadastros, se ativo.
+if (licenca.ModuloAtivo("Cadastros"))
+    await SemearLocalidadesAsync(app);
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -81,6 +91,10 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok", servico = "AgenteLoc
 // Endpoints de autenticação/acesso (login, refresh, logout, trocar-senha, ...).
 app.MapAcessoEndpoints();
 
+// Endpoints dos módulos licenciados (serviços só registrados se ativos — ver laço acima).
+if (licenca.ModuloAtivo("Cadastros"))
+    app.MapCadastrosEndpoints();
+
 return await app.RunJasperFxCommands(args);
 
 static async Task SemearAcessoAsync(WebApplication app, IReadOnlyList<FuncionalidadeManifesto> manifesto)
@@ -88,6 +102,13 @@ static async Task SemearAcessoAsync(WebApplication app, IReadOnlyList<Funcionali
     using var scope = app.Services.CreateScope();
     var seeder = scope.ServiceProvider.GetRequiredService<SeederAcesso>();
     await seeder.ExecutarAsync(manifesto);
+}
+
+static async Task SemearLocalidadesAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<Cadastros.Infraestrutura.SeederLocalidades>();
+    await seeder.ExecutarAsync();
 }
 
 static async Task AplicarMigrationsDosModulosAsync(WebApplication app)

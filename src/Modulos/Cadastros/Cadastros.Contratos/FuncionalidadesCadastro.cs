@@ -11,6 +11,7 @@ public static class FuncionalidadesCadastro
     public const string ModuloCodigo = "cad";
     public const string ModuloNome = "Cadastros";
 
+    public const string ListarCliente = "cad.cliente.listar";
     public const string CriarCliente = "cad.cliente.criar";
     public const string EditarCliente = "cad.cliente.editar";
     public const string CriarProduto = "cad.produto.criar";
@@ -18,6 +19,7 @@ public static class FuncionalidadesCadastro
 
     public static IEnumerable<FuncionalidadeManifesto> Manifesto() =>
     [
+        new(ListarCliente, ModuloCodigo, ModuloNome, "Listar clientes", "Consultar a lista de clientes."),
         new(CriarCliente, ModuloCodigo, ModuloNome, "Criar cliente", "Cadastrar novos clientes."),
         new(EditarCliente, ModuloCodigo, ModuloNome, "Editar cliente", "Alterar dados de clientes."),
         new(CriarProduto, ModuloCodigo, ModuloNome, "Criar produto", "Cadastrar novos produtos."),

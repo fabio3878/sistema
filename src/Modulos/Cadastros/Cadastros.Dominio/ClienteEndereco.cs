@@ -77,6 +77,35 @@ public sealed class ClienteEndereco : EntidadeBase
         });
     }
 
+    /// <summary>Revalida e reaplica os dados a um endereço existente (reusa as regras de <see cref="Criar"/>).</summary>
+    internal Result Atualizar(DadosEndereco dados)
+    {
+        var validado = Criar(EmpresaId, ClienteId, dados);
+        if (validado.Falhou)
+            return Result.Falha(validado.Erro!);
+
+        var v = validado.Valor!;
+        Tipo = v.Tipo;
+        Cep = v.Cep;
+        Logradouro = v.Logradouro;
+        Numero = v.Numero;
+        Complemento = v.Complemento;
+        Bairro = v.Bairro;
+        Municipio = v.Municipio;
+        Uf = v.Uf;
+        CodigoIbgeMunicipio = v.CodigoIbgeMunicipio;
+        Pais = v.Pais;
+        MarcarAtualizado();
+        return Result.Ok();
+    }
+
+    /// <summary>Soft delete do endereço (tombstone). NUNCA remoção física — regra de sync.</summary>
+    internal void MarcarRemovido()
+    {
+        Excluido = true;
+        MarcarAtualizado();
+    }
+
     private static string SomenteDigitos(string? valor) =>
         new((valor ?? string.Empty).Where(char.IsDigit).ToArray());
 }
