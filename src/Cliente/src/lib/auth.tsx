@@ -27,6 +27,12 @@ interface TokenResposta {
 
 type Status = 'carregando' | 'anon' | 'autenticado'
 
+interface OpcoesReq {
+  method?: string
+  body?: unknown
+  signal?: AbortSignal
+}
+
 interface AuthContexto {
   status: Status
   sessao: Sessao | null
@@ -34,6 +40,8 @@ interface AuthContexto {
   entrar: (login: string, senha: string) => Promise<void>
   sair: () => Promise<void>
   trocarSenha: (senhaAtual: string, senhaNova: string) => Promise<void>
+  /** Chama um endpoint autenticado (bearer + refresh automático em 401). */
+  requisitar: <T>(caminho: string, opcoes?: OpcoesReq) => Promise<T>
 }
 
 const Ctx = createContext<AuthContexto | null>(null)
@@ -69,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /** Chama endpoint autenticado; em 401 tenta um refresh e repete uma vez. */
   const comRefresh = useCallback(async function <T>(
     caminho: string,
-    opcoes: { method?: string; body?: unknown } = {},
+    opcoes: OpcoesReq = {},
   ): Promise<T> {
     try {
       return await api<T>(caminho, { ...opcoes, token: tokens.current?.accessToken })
@@ -160,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   return (
-    <Ctx.Provider value={{ status, sessao, deveTrocarSenha, entrar, sair, trocarSenha }}>
+    <Ctx.Provider value={{ status, sessao, deveTrocarSenha, entrar, sair, trocarSenha, requisitar: comRefresh }}>
       {children}
     </Ctx.Provider>
   )

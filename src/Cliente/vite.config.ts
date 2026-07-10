@@ -18,6 +18,10 @@ export default defineConfig({
         target: process.env.AGENTE_LOCAL_URL ?? 'http://localhost:5080',
         changeOrigin: true,
       },
+      '/cad': {
+        target: process.env.AGENTE_LOCAL_URL ?? 'http://localhost:5080',
+        changeOrigin: true,
+      },
     },
   },
   // Tauri controla o build do frontend; não limpar a tela para não engolir logs.

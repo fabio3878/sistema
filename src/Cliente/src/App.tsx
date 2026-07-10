@@ -1,11 +1,14 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ThemeProvider } from '@/lib/theme'
 import { AuthProvider, useAuth } from '@/lib/auth'
+import { queryClient } from '@/lib/query'
 import { LoginPage } from '@/paginas/login'
 import { AppShell } from '@/components/shell/app-shell'
 import { DashboardPage } from '@/paginas/dashboard'
+import { ClientesPage } from '@/paginas/clientes'
 import { PlaceholderPage } from '@/paginas/placeholder'
 
 /** Decide entre login e casca conforme o estado de autenticação. */
@@ -27,7 +30,7 @@ function Raiz() {
       <AppShell>
         <Routes>
           <Route path="/" element={<DashboardPage />} />
-          <Route path="/clientes" element={<PlaceholderPage titulo="Clientes" />} />
+          <Route path="/clientes" element={<ClientesPage />} />
           <Route path="/produtos" element={<PlaceholderPage titulo="Produtos" />} />
           <Route path="/vendas" element={<PlaceholderPage titulo="Vendas" />} />
           <Route path="/financeiro" element={<PlaceholderPage titulo="Financeiro" />} />
@@ -42,7 +45,9 @@ export default function App() {
     <ThemeProvider>
       <TooltipProvider delayDuration={200}>
         <AuthProvider>
-          <Raiz />
+          <QueryClientProvider client={queryClient}>
+            <Raiz />
+          </QueryClientProvider>
         </AuthProvider>
       </TooltipProvider>
     </ThemeProvider>
