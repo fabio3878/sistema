@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Plataforma.Dominio;
+using Plataforma.Infraestrutura.Auditoria;
 
 namespace Plataforma.Infraestrutura;
 
@@ -18,7 +20,11 @@ public static class BancoServiceCollectionExtensions
     {
         var opcoes = config.GetSection(OpcoesBanco.Secao).Get<OpcoesBanco>() ?? new OpcoesBanco();
 
-        services.AddDbContext<TContexto>(o =>
+        // Trilha de auditoria: transversal a todo DbContext que passa por aqui (fonte única).
+        // Scoped para enxergar o usuário/tenant da requisição corrente.
+        services.TryAddScoped<AuditoriaInterceptor>();
+
+        services.AddDbContext<TContexto>((sp, o) =>
         {
             switch (opcoes.Provider)
             {
@@ -31,6 +37,8 @@ public static class BancoServiceCollectionExtensions
                     o.UseSqlite(opcoes.ConnectionString);
                     break;
             }
+
+            o.AddInterceptors(sp.GetRequiredService<AuditoriaInterceptor>());
         });
 
         return services;

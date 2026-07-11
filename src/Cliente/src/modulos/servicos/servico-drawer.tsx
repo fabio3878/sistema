@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { listarUnidades } from '@/modulos/cadastros/unidades'
+import { BotaoHistorico } from '@/modulos/auditoria/botao-historico'
 import { atualizarServico, criarServico, obterServico } from './api'
 import type { ServicoEntrada } from './tipos'
 
@@ -119,6 +120,7 @@ export function ServicoDrawer({ aberto, onAbrir, servicoId }: Props) {
       descricao={editando ? 'Altere os dados e salve.' : 'Preencha os dados do serviço.'}
       rodape={
         <>
+          {editando && <BotaoHistorico entidade="Servico" registroId={servicoId!} />}
           <Button variant="secondary" type="button" onClick={() => onAbrir(false)}>
             Cancelar
           </Button>

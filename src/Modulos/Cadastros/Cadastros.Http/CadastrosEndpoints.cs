@@ -1,3 +1,4 @@
+using BuildingBlocks;
 using Cadastros.Aplicacao;
 using Cadastros.Contratos;
 using Microsoft.AspNetCore.Builder;
@@ -167,6 +168,18 @@ public static class CadastrosEndpoints
             var r = await svc.AlterarSituacaoServico(empresa.EmpresaId, id, ativo: false, ct);
             return r.Sucesso ? Results.NoContent() : Results.BadRequest(new { erro = r.Erro });
         }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesCadastro.EditarServico));
+
+        // Auditoria — trilha "quem alterou o quê" dos cadastros (paginada), gating cad.auditoria.ver.
+        grupo.MapGet("/auditoria", async (
+            ICadastrosConsulta consulta, IContextoEmpresa empresa, CancellationToken ct,
+            string? entidade, string? registroId, string? usuario,
+            OperacaoAuditoria? operacao, DateTimeOffset? de, DateTimeOffset? ate,
+            int? pagina, int? tamanho) =>
+        {
+            var filtro = new FiltroAuditoria(entidade, registroId, usuario, operacao, de, ate,
+                pagina ?? 1, tamanho ?? 20);
+            return Results.Ok(await consulta.ListarAuditoria(empresa.EmpresaId, filtro, ct));
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesCadastro.VerAuditoria));
 
         return app;
     }

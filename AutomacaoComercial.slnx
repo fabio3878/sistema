@@ -30,5 +30,6 @@
     <Project Path="tests/Acesso.Tests/Acesso.Tests.csproj" />
     <Project Path="tests/Arquitetura.Tests/Arquitetura.Tests.csproj" />
     <Project Path="tests/Cadastros.Tests/Cadastros.Tests.csproj" />
+    <Project Path="tests/Plataforma.Tests/Plataforma.Tests.csproj" />
   </Folder>
 </Solution>

@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { listarUnidades } from '@/modulos/cadastros/unidades'
+import { BotaoHistorico } from '@/modulos/auditoria/botao-historico'
 import { atualizarProduto, criarProduto, obterProduto } from './api'
 import type { ProdutoEntrada, OrigemMercadoria } from './tipos'
 
@@ -170,6 +171,7 @@ export function ProdutoDrawer({ aberto, onAbrir, produtoId }: Props) {
       descricao={editando ? 'Altere os dados e salve.' : 'Preencha os dados do produto.'}
       rodape={
         <>
+          {editando && <BotaoHistorico entidade="Produto" registroId={produtoId!} />}
           <Button variant="secondary" type="button" onClick={() => onAbrir(false)}>
             Cancelar
           </Button>

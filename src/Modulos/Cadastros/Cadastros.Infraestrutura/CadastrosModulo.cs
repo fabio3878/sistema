@@ -27,6 +27,7 @@ public sealed class CadastrosModulo : IModulo
         services.AddScoped<IServicoRepositorio, ServicoRepositorio>();
         services.AddScoped<ILocalidadeRepositorio, LocalidadeRepositorio>();
         services.AddScoped<IUnidadeRepositorio, UnidadeRepositorio>();
+        services.AddScoped<IAuditoriaRepositorio, AuditoriaRepositorio>();
 
         services.AddScoped<ICadastrosConsulta, CadastrosConsulta>();
         services.AddScoped<CadastrosAppService>();

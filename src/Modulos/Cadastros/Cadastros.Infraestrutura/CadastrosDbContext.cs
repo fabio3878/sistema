@@ -1,6 +1,7 @@
 using Cadastros.Dominio;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Infraestrutura;
+using Plataforma.Infraestrutura.Auditoria;
 
 namespace Cadastros.Infraestrutura;
 
@@ -133,6 +134,9 @@ public sealed class CadastrosDbContext(DbContextOptions<CadastrosDbContext> opti
             e.Property(p => p.Sigla).HasMaxLength(6);
             e.Property(p => p.Descricao).HasMaxLength(60).IsRequired();
         });
+
+        // Trilha de auditoria do módulo (append-only) — ver AuditoriaInterceptor.
+        modelBuilder.Entity<RegistroAuditoria>().ConfigurarAuditoria("cad_auditoria");
 
         base.OnModelCreating(modelBuilder);
     }

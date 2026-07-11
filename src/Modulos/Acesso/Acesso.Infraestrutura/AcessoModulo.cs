@@ -24,6 +24,7 @@ public sealed class AcessoModulo : IModulo
         services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
         services.AddScoped<IPerfilRepositorio, PerfilRepositorio>();
         services.AddScoped<IRefreshTokenRepositorio, RefreshTokenRepositorio>();
+        services.AddScoped<IAuditoriaRepositorio, AuditoriaRepositorio>();
         services.AddSingleton<IHashSenha, Pbkdf2HashSenha>();
 
         services.AddScoped<IAcessoConsulta, AcessoConsulta>();

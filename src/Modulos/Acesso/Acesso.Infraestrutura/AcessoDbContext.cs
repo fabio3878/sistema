@@ -1,6 +1,7 @@
 using Acesso.Dominio;
 using Microsoft.EntityFrameworkCore;
 using Plataforma.Infraestrutura;
+using Plataforma.Infraestrutura.Auditoria;
 
 namespace Acesso.Infraestrutura;
 
@@ -118,6 +119,9 @@ public sealed class AcessoDbContext(DbContextOptions<AcessoDbContext> options)
                 .HasForeignKey(p => p.ModuloCodigo)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        // Trilha de auditoria do módulo (append-only) — ver AuditoriaInterceptor.
+        modelBuilder.Entity<RegistroAuditoria>().ConfigurarAuditoria("acs_auditoria");
 
         base.OnModelCreating(modelBuilder);
     }

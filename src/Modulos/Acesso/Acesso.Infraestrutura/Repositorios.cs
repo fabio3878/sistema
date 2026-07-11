@@ -1,7 +1,16 @@
 using Acesso.Dominio;
+using BuildingBlocks;
 using Microsoft.EntityFrameworkCore;
+using Plataforma.Infraestrutura.Auditoria;
 
 namespace Acesso.Infraestrutura;
+
+/// <summary>Leitura da trilha de auditoria do módulo (acs_auditoria) via o leitor compartilhado.</summary>
+public sealed class AuditoriaRepositorio(AcessoDbContext db) : IAuditoriaRepositorio
+{
+    public Task<PaginaResultado<AuditoriaDto>> Listar(string empresaId, FiltroAuditoria filtro, CancellationToken ct = default) =>
+        LeitorAuditoria.Consultar(db, empresaId, filtro, ct);
+}
 
 /// <summary>Implementação EF Core das portas de Usuario. Toda leitura filtra por EmpresaId (tenant).</summary>
 public sealed class UsuarioRepositorio(AcessoDbContext db) : IUsuarioRepositorio

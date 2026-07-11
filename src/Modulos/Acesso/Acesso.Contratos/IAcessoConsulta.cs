@@ -1,3 +1,5 @@
+using BuildingBlocks;
+
 namespace Acesso.Contratos;
 
 /// <summary>
@@ -9,4 +11,7 @@ public interface IAcessoConsulta
     Task<UsuarioDto?> ObterUsuario(string empresaId, string usuarioId, CancellationToken ct = default);
     Task<IReadOnlyList<UsuarioDto>> ListarUsuarios(string empresaId, CancellationToken ct = default);
     Task<PerfilDto?> ObterPerfil(string empresaId, string perfilId, CancellationToken ct = default);
+
+    /// <summary>Trilha de auditoria do módulo (usuários, perfis, tokens), paginada.</summary>
+    Task<PaginaResultado<AuditoriaDto>> ListarAuditoria(string empresaId, FiltroAuditoria filtro, CancellationToken ct = default);
 }

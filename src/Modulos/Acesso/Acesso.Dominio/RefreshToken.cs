@@ -17,6 +17,7 @@ public sealed class RefreshToken : EntidadeBase
     /// inativação), este token deixa de ser aceito.</summary>
     public string StampSeguranca { get; private set; } = default!;
 
+    [NaoAuditar] // segredo: fora da trilha de auditoria
     public string TokenHash { get; private set; } = default!;
     public DateTimeOffset ExpiraEm { get; private set; }
     public DateTimeOffset? RevogadoEm { get; private set; }

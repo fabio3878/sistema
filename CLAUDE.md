@@ -95,6 +95,12 @@ tests/Arquitetura.Tests                    fronteiras (NetArchTest) — falha o 
 5. Se o módulo tem permissões, declare-as em código (constantes em `*.Contratos` +
    `IModulo.Funcionalidades()`); o seeder do Acesso reconcilia no catálogo no startup.
 6. Adicione teste de arquitetura confirmando que não vaza internals.
+7. **Auditoria:** mapeie a trilha do módulo no `OnModelCreating` —
+   `modelBuilder.Entity<RegistroAuditoria>().ConfigurarAuditoria("<pref>_auditoria")` (de
+   `Plataforma.Infraestrutura.Auditoria`). O `AuditoriaInterceptor` grava "quem alterou o quê"
+   (diff antigo→novo, usuário, data) na mesma transação; sem esse mapeamento o módulo simplesmente
+   não gera trilha. Campos sensíveis (segredos) levam `[NaoAuditar]`. Para expor a visualização,
+   declare `<mod>.auditoria.ver` e um `GET /<grupo>/auditoria` (padrão em Cadastros/Acesso).
 
 ## Comandos
 Usar o SDK .NET 10 (instalado em `%LOCALAPPDATA%\Microsoft\dotnet`, já no PATH do usuário).

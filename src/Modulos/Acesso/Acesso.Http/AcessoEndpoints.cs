@@ -1,5 +1,6 @@
 using Acesso.Aplicacao;
 using Acesso.Contratos;
+using BuildingBlocks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -62,6 +63,18 @@ public static class AcessoEndpoints
         grupo.MapGet("/usuarios", async (IAcessoConsulta consulta, IContextoEmpresa empresa, CancellationToken ct) =>
             Results.Ok(await consulta.ListarUsuarios(empresa.EmpresaId, ct)))
             .RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesAcesso.GerenciarUsuarios));
+
+        // Auditoria de segurança (usuários, perfis, logins), paginada. Gating acs.auditoria.ver.
+        grupo.MapGet("/auditoria", async (
+            IAcessoConsulta consulta, IContextoEmpresa empresa, CancellationToken ct,
+            string? entidade, string? registroId, string? usuario,
+            OperacaoAuditoria? operacao, DateTimeOffset? de, DateTimeOffset? ate,
+            int? pagina, int? tamanho) =>
+        {
+            var filtro = new FiltroAuditoria(entidade, registroId, usuario, operacao, de, ate,
+                pagina ?? 1, tamanho ?? 20);
+            return Results.Ok(await consulta.ListarAuditoria(empresa.EmpresaId, filtro, ct));
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesAcesso.VerAuditoria));
 
         return app;
     }

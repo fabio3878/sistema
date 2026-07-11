@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Command } from 'cmdk'
 import { useNavigate } from 'react-router-dom'
 import { NAV } from '@/modulos/registro'
-import { podeVer } from '@/lib/sessao'
+import { podeVerItem } from '@/lib/sessao'
 import { useSessao } from '@/lib/auth'
 
 interface CommandPaletteProps {
@@ -14,7 +14,7 @@ interface CommandPaletteProps {
 export function CommandPalette({ aberto, onAbrir }: CommandPaletteProps) {
   const navigate = useNavigate()
   const sessao = useSessao()
-  const itens = NAV.filter((i) => podeVer(sessao, i.modulo, i.funcionalidade))
+  const itens = NAV.filter((i) => podeVerItem(sessao, i))
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

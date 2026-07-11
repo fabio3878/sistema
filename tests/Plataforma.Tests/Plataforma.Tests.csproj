@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Plataforma\Plataforma.Infraestrutura\Plataforma.Infraestrutura.csproj" />
+    <ProjectReference Include="..\..\src\Plataforma\Plataforma.Dominio\Plataforma.Dominio.csproj" />
+    <ProjectReference Include="..\..\src\Compartilhado\BuildingBlocks\BuildingBlocks.csproj" />
+  </ItemGroup>
+
+</Project>

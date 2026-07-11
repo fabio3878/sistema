@@ -27,6 +27,7 @@ public sealed class Usuario : EntidadeBase
     public string? Email { get; private set; }
 
     /// <summary>Hash da senha no formato PHC (algoritmo+iterações+salt+hash numa string). Nunca em claro.</summary>
+    [NaoAuditar] // segredo: fora da trilha de auditoria
     public string SenhaHash { get; private set; } = default!;
     public DateTimeOffset SenhaAlteradaEm { get; private set; }
 

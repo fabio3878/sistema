@@ -5,8 +5,10 @@ import {
   Wrench,
   ShoppingCart,
   Wallet,
+  ScrollText,
   type LucideIcon,
 } from 'lucide-react'
+import type { AlvoAcesso } from '@/lib/sessao'
 
 /**
  * Catálogo de navegação da casca única. Cada item declara o MÓDULO licenciável
@@ -22,6 +24,8 @@ export interface ItemNav {
   modulo: string
   /** Código da funcionalidade (convenção <modulo>.<recurso>.<acao>). */
   funcionalidade: string
+  /** Alternativas: o item aparece se o alvo principal OU qualquer uma destas for permitida. */
+  requerQualquer?: AlvoAcesso[]
 }
 
 export const NAV: ItemNav[] = [
@@ -52,6 +56,15 @@ export const NAV: ItemNav[] = [
     icone: Wrench,
     modulo: 'cad',
     funcionalidade: 'cad.servico.listar',
+  },
+  {
+    rota: '/auditoria',
+    titulo: 'Auditoria',
+    icone: ScrollText,
+    modulo: 'cad',
+    funcionalidade: 'cad.auditoria.ver',
+    // Cruza dois módulos: aparece para quem vê a trilha de Cadastros OU de Segurança (Acesso).
+    requerQualquer: [{ modulo: 'acs', funcionalidade: 'acs.auditoria.ver' }],
   },
   {
     rota: '/vendas',

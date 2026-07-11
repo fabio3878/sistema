@@ -1,5 +1,6 @@
 using Acesso.Contratos;
 using Acesso.Dominio;
+using BuildingBlocks;
 
 namespace Acesso.Aplicacao;
 
@@ -7,9 +8,13 @@ namespace Acesso.Aplicacao;
 /// Implementa a API pública de consulta (<see cref="IAcessoConsulta"/>) mapeando entidades de
 /// domínio para DTOs. Nunca expõe o hash de senha. Depende só das portas do Dominio — nada de EF.
 /// </summary>
-public sealed class AcessoConsulta(IUsuarioRepositorio usuarios, IPerfilRepositorio perfis)
+public sealed class AcessoConsulta(
+    IUsuarioRepositorio usuarios, IPerfilRepositorio perfis, IAuditoriaRepositorio auditoria)
     : IAcessoConsulta
 {
+    public Task<PaginaResultado<AuditoriaDto>> ListarAuditoria(string empresaId, FiltroAuditoria filtro, CancellationToken ct = default) =>
+        auditoria.Listar(empresaId, filtro, ct);
+
     public async Task<UsuarioDto?> ObterUsuario(string empresaId, string usuarioId, CancellationToken ct = default)
     {
         var u = await usuarios.ObterPorId(empresaId, usuarioId, ct);

@@ -19,6 +19,9 @@ public static class FuncionalidadesCadastro
     public const string CriarServico = "cad.servico.criar";
     public const string EditarServico = "cad.servico.editar";
 
+    /// <summary>Ver a trilha de auditoria dos cadastros (clientes, produtos, serviços).</summary>
+    public const string VerAuditoria = "cad.auditoria.ver";
+
     public static IEnumerable<FuncionalidadeManifesto> Manifesto() =>
     [
         new(ListarCliente, ModuloCodigo, ModuloNome, "Listar clientes", "Consultar a lista de clientes."),
@@ -27,6 +30,7 @@ public static class FuncionalidadesCadastro
         new(ListarServico, ModuloCodigo, ModuloNome, "Listar serviços", "Consultar a lista de serviços."),
         new(CriarServico, ModuloCodigo, ModuloNome, "Criar serviço", "Cadastrar novos serviços."),
         new(EditarServico, ModuloCodigo, ModuloNome, "Editar serviço", "Alterar dados de serviços."),
+        new(VerAuditoria, ModuloCodigo, ModuloNome, "Ver auditoria", "Consultar a trilha de alterações dos cadastros."),
     ];
 }
 

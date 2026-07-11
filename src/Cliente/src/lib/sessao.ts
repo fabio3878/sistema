@@ -15,13 +15,31 @@ export interface Sessao {
 
 /**
  * Regra de gating: módulo licenciado E (ConcedeTodas OU tem a funcionalidade).
- * 'core' é sempre ativo (não é licenciável — como o módulo Acesso no backend,
- * que fica fora do licenca.ModuloAtivo).
+ * 'core' e 'acs' (Acesso) são sempre ativos (não licenciáveis — o backend mantém o
+ * Acesso fora do licenca.ModuloAtivo, autenticação/segurança não é contratável).
  */
 export function podeVer(sessao: Sessao, modulo: string, funcionalidade: string) {
-  const licenciado = modulo === 'core' || sessao.modulosAtivos.has(modulo)
+  const licenciado = modulo === 'core' || modulo === 'acs' || sessao.modulosAtivos.has(modulo)
   const permitido = sessao.concedeTodas || sessao.funcionalidades.has(funcionalidade)
   return licenciado && permitido
+}
+
+/** Alternativa de gating (módulo+funcionalidade), para itens que atendem a mais de um módulo. */
+export interface AlvoAcesso {
+  modulo: string
+  funcionalidade: string
+}
+
+/**
+ * Visibilidade de um item de navegação: visível se o alvo principal OU QUALQUER alternativa
+ * (`requerQualquer`) for permitida. Usado por telas que cruzam módulos (ex.: Auditoria).
+ */
+export function podeVerItem(
+  sessao: Sessao,
+  item: AlvoAcesso & { requerQualquer?: AlvoAcesso[] },
+) {
+  if (podeVer(sessao, item.modulo, item.funcionalidade)) return true
+  return (item.requerQualquer ?? []).some((a) => podeVer(sessao, a.modulo, a.funcionalidade))
 }
 
 /** Claims que o backend coloca no JWT (ver ServicoTokenJwt). */

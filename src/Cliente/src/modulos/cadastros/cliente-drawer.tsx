@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { BotaoHistorico } from '@/modulos/auditoria/botao-historico'
 import { atualizarCliente, criarCliente, listarEstados, listarMunicipios, obterCliente } from './api'
 import { mascararCep, mascararDocumento, mascararTelefone, soDigitos, validarCnpj, validarCpf } from './formato'
 import type { ClienteEntrada, TipoPessoa } from './tipos'
@@ -281,6 +282,7 @@ export function ClienteDrawer({ aberto, onAbrir, clienteId }: Props) {
       descricao={editando ? 'Altere os dados e salve.' : 'Preencha os dados do cliente.'}
       rodape={
         <>
+          {editando && <BotaoHistorico entidade="Cliente" registroId={clienteId!} />}
           <Button variant="secondary" type="button" onClick={() => onAbrir(false)}>
             Cancelar
           </Button>

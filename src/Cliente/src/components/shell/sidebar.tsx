@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { NAV } from '@/modulos/registro'
-import { podeVer } from '@/lib/sessao'
+import { podeVerItem } from '@/lib/sessao'
 import { useSessao } from '@/lib/auth'
 
 interface SidebarProps {
@@ -19,7 +19,7 @@ interface SidebarProps {
  */
 export function Sidebar({ recolhida, onAlternar, onAbrirBusca }: SidebarProps) {
   const sessao = useSessao()
-  const itens = NAV.filter((i) => podeVer(sessao, i.modulo, i.funcionalidade))
+  const itens = NAV.filter((i) => podeVerItem(sessao, i))
 
   return (
     <aside

@@ -1,3 +1,5 @@
+using BuildingBlocks;
+
 namespace Cadastros.Contratos;
 
 /// <summary>
@@ -6,6 +8,9 @@ namespace Cadastros.Contratos;
 /// </summary>
 public interface ICadastrosConsulta
 {
+    /// <summary>Trilha de auditoria do módulo (clientes, produtos, serviços), paginada.</summary>
+    Task<PaginaResultado<AuditoriaDto>> ListarAuditoria(string empresaId, FiltroAuditoria filtro, CancellationToken ct = default);
+
     Task<IReadOnlyList<ClienteResumoDto>> ListarClientes(string empresaId, FiltroClientes filtro, CancellationToken ct = default);
     Task<ClienteDto?> ObterCliente(string empresaId, string clienteId, CancellationToken ct = default);
 

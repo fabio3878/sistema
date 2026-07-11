@@ -11,6 +11,7 @@ import { DashboardPage } from '@/paginas/dashboard'
 import { ClientesPage } from '@/paginas/clientes'
 import { ProdutosPage } from '@/paginas/produtos'
 import { ServicosPage } from '@/paginas/servicos'
+import { AuditoriaPage } from '@/paginas/auditoria'
 import { PlaceholderPage } from '@/paginas/placeholder'
 
 /** Decide entre login e casca conforme o estado de autenticação. */
@@ -35,6 +36,7 @@ function Raiz() {
           <Route path="/clientes" element={<ClientesPage />} />
           <Route path="/produtos" element={<ProdutosPage />} />
           <Route path="/servicos" element={<ServicosPage />} />
+          <Route path="/auditoria" element={<AuditoriaPage />} />
           <Route path="/vendas" element={<PlaceholderPage titulo="Vendas" />} />
           <Route path="/financeiro" element={<PlaceholderPage titulo="Financeiro" />} />
         </Routes>

@@ -1,3 +1,4 @@
+using BuildingBlocks;
 using Cadastros.Contratos;
 
 namespace Cadastros.Dominio;
@@ -66,4 +67,10 @@ public interface IServicoRepositorio
 public interface IUnidadeDeTrabalho
 {
     Task<int> Salvar(CancellationToken ct = default);
+}
+
+/// <summary>Porta de leitura paginada da trilha de auditoria do módulo (cad_auditoria).</summary>
+public interface IAuditoriaRepositorio
+{
+    Task<PaginaResultado<AuditoriaDto>> Listar(string empresaId, FiltroAuditoria filtro, CancellationToken ct = default);
 }

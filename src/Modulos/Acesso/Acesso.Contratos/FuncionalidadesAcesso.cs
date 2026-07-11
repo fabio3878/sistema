@@ -15,6 +15,9 @@ public static class FuncionalidadesAcesso
     public const string GerenciarUsuarios = "acs.usuario.gerenciar";
     public const string GerenciarPerfis = "acs.perfil.gerenciar";
 
+    /// <summary>Ver a trilha de auditoria de segurança (usuários, perfis, logins).</summary>
+    public const string VerAuditoria = "acs.auditoria.ver";
+
     /// <summary>Manifesto do módulo (consumido pelo <see cref="IModulo.Funcionalidades"/>).</summary>
     public static IEnumerable<FuncionalidadeManifesto> Manifesto() =>
     [
@@ -22,5 +25,7 @@ public static class FuncionalidadesAcesso
             "Criar, editar e inativar usuários do sistema."),
         new(GerenciarPerfis, ModuloCodigo, ModuloNome, "Gerenciar perfis",
             "Criar perfis e conceder/revogar funcionalidades."),
+        new(VerAuditoria, ModuloCodigo, ModuloNome, "Ver auditoria",
+            "Consultar a trilha de alterações de segurança."),
     ];
 }

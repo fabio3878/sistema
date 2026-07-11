@@ -1,3 +1,4 @@
+using BuildingBlocks;
 using Cadastros.Contratos;
 using Cadastros.Dominio;
 
@@ -12,9 +13,13 @@ public sealed class CadastrosConsulta(
     IProdutoRepositorio produtos,
     IServicoRepositorio servicos,
     ILocalidadeRepositorio localidades,
-    IUnidadeRepositorio unidades)
+    IUnidadeRepositorio unidades,
+    IAuditoriaRepositorio auditoria)
     : ICadastrosConsulta
 {
+    public Task<PaginaResultado<AuditoriaDto>> ListarAuditoria(string empresaId, FiltroAuditoria filtro, CancellationToken ct = default) =>
+        auditoria.Listar(empresaId, filtro, ct);
+
     public async Task<IReadOnlyList<ClienteResumoDto>> ListarClientes(string empresaId, FiltroClientes filtro, CancellationToken ct = default)
     {
         var lista = await clientes.Listar(empresaId, filtro, ct);

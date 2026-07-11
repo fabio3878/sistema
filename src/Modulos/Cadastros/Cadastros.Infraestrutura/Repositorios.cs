@@ -1,8 +1,17 @@
+using BuildingBlocks;
 using Cadastros.Contratos;
 using Cadastros.Dominio;
 using Microsoft.EntityFrameworkCore;
+using Plataforma.Infraestrutura.Auditoria;
 
 namespace Cadastros.Infraestrutura;
+
+/// <summary>Leitura da trilha de auditoria do módulo (cad_auditoria) via o leitor compartilhado.</summary>
+public sealed class AuditoriaRepositorio(CadastrosDbContext db) : IAuditoriaRepositorio
+{
+    public Task<PaginaResultado<AuditoriaDto>> Listar(string empresaId, FiltroAuditoria filtro, CancellationToken ct = default) =>
+        LeitorAuditoria.Consultar(db, empresaId, filtro, ct);
+}
 
 /// <summary>Implementação EF Core das portas de Cliente. Toda leitura filtra por EmpresaId (tenant).</summary>
 public sealed class ClienteRepositorio(CadastrosDbContext db) : IClienteRepositorio
