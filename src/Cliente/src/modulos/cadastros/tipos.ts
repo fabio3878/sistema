@@ -16,6 +16,9 @@ export interface ClienteResumo {
   nomeFantasia: string | null
   email: string | null
   telefone: string | null
+  logradouro: string | null
+  numero: string | null
+  bairro: string | null
   cidade: string | null
   uf: string | null
   ativo: boolean

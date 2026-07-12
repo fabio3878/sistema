@@ -29,6 +29,7 @@ public sealed class CadastrosConsulta(
                             ?? c.Enderecos.FirstOrDefault();
             return new ClienteResumoDto(
                 c.Id, c.Nome, c.Documento, c.TipoPessoa, c.NomeFantasia, c.Email, c.Telefone,
+                principal?.Logradouro, principal?.Numero, principal?.Bairro,
                 principal?.Municipio, principal?.Uf, c.Ativo, c.Enderecos.Count);
         }).ToArray();
     }

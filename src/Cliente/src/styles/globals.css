@@ -96,15 +96,33 @@
     from { transform: translateX(16px); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
   }
+  /* Modal central posicionado por left/top-1/2: fade + zoom mantendo a translação de centralização. */
+  @keyframes ac-modal-in {
+    from { transform: translate(-50%, -50%) scale(0.96); opacity: 0; }
+    to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  }
+  /* Painel centralizado por flexbox (sem translate próprio): só fade + zoom, sem deslocar. */
+  @keyframes ac-pop-in {
+    from { transform: scale(0.97); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
   .ac-overlay-in {
     animation: ac-overlay-in 180ms cubic-bezier(0.2, 0, 0, 1);
   }
   .ac-drawer-in {
     animation: ac-drawer-in 180ms cubic-bezier(0.2, 0, 0, 1);
   }
+  .ac-modal-in {
+    animation: ac-modal-in 160ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .ac-pop-in {
+    animation: ac-pop-in 140ms cubic-bezier(0.2, 0, 0, 1);
+  }
   @media (prefers-reduced-motion: reduce) {
     .ac-overlay-in,
-    .ac-drawer-in {
+    .ac-drawer-in,
+    .ac-modal-in,
+    .ac-pop-in {
       animation: none;
     }
   }

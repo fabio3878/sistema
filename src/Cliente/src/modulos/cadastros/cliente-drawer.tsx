@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Combobox } from '@/components/ui/combobox'
-import { Drawer, useDrawerMaximizado } from '@/components/ui/drawer'
+import { Drawer, DrawerCancelar, useDrawerMaximizado } from '@/components/ui/drawer'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api'
@@ -283,9 +283,7 @@ export function ClienteDrawer({ aberto, onAbrir, clienteId }: Props) {
       rodape={
         <>
           {editando && <BotaoHistorico entidade="Cliente" registroId={clienteId!} />}
-          <Button variant="secondary" type="button" onClick={() => onAbrir(false)}>
-            Cancelar
-          </Button>
+          <DrawerCancelar onAbrir={onAbrir} />
           <Button type="submit" form="form-cliente" disabled={isSubmitting || carregando}>
             {(isSubmitting || salvar.isPending) && <Loader2 className="animate-spin" />}
             Salvar

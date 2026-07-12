@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Combobox } from '@/components/ui/combobox'
-import { Drawer, useDrawerMaximizado } from '@/components/ui/drawer'
+import { Drawer, DrawerCancelar, useDrawerMaximizado } from '@/components/ui/drawer'
 import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
@@ -172,9 +172,7 @@ export function ProdutoDrawer({ aberto, onAbrir, produtoId }: Props) {
       rodape={
         <>
           {editando && <BotaoHistorico entidade="Produto" registroId={produtoId!} />}
-          <Button variant="secondary" type="button" onClick={() => onAbrir(false)}>
-            Cancelar
-          </Button>
+          <DrawerCancelar onAbrir={onAbrir} />
           <Button type="submit" form="form-produto" disabled={isSubmitting || carregando}>
             {(isSubmitting || salvar.isPending) && <Loader2 className="animate-spin" />}
             Salvar

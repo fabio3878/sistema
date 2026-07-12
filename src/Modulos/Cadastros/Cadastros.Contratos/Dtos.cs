@@ -48,7 +48,7 @@ public sealed record EnderecoDto(
     string CodigoIbgeMunicipio,
     string Pais);
 
-/// <summary>Linha enxuta da listagem de clientes (não carrega os endereços, só a contagem + cidade principal).</summary>
+/// <summary>Linha enxuta da listagem de clientes (não carrega os endereços; traz o principal resumido + contagem).</summary>
 public sealed record ClienteResumoDto(
     string Id,
     string Nome,
@@ -57,6 +57,9 @@ public sealed record ClienteResumoDto(
     string? NomeFantasia,
     string? Email,
     string? Telefone,
+    string? Logradouro,
+    string? Numero,
+    string? Bairro,
     string? Cidade,
     string? Uf,
     bool Ativo,

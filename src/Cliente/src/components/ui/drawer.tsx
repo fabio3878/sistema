@@ -28,11 +28,12 @@ export function useDrawerMaximizado() {
  * rolável. Base no Radix Dialog (acessível, foco preso, Esc fecha).
  */
 export function Drawer({ aberto, onAbrir, titulo, descricao, children, rodape, className }: DrawerProps) {
-  const [maximizado, setMaximizado] = useState(false)
+  // Abre maximizado (modal central) por padrão; o usuário pode restaurar para lateral na sessão.
+  const [maximizado, setMaximizado] = useState(true)
 
-  // Ao (re)abrir, volta para o modo lateral.
+  // Ao (re)abrir, volta ao modo maximizado.
   useEffect(() => {
-    if (aberto) setMaximizado(false)
+    if (aberto) setMaximizado(true)
   }, [aberto])
 
   return (
@@ -40,11 +41,15 @@ export function Drawer({ aberto, onAbrir, titulo, descricao, children, rodape, c
       <Dialog.Portal>
         <Dialog.Overlay className="ac-overlay-in fixed inset-0 z-50 bg-black/40" />
         <Dialog.Content
+          // Fechar só pelo X (ou Cancelar): clicar fora e Esc não fecham, para não perder o formulário.
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
           className={cn(
-            'ac-drawer-in fixed z-50 flex flex-col border-border bg-elevated shadow-drawer focus:outline-none',
+            'fixed z-50 flex flex-col border-border bg-elevated shadow-drawer focus:outline-none',
             maximizado
-              ? 'left-1/2 top-1/2 h-[90vh] w-[95vw] max-w-6xl -translate-x-1/2 -translate-y-1/2 rounded-xl border'
-              : 'right-0 top-0 h-full w-full max-w-xl border-l',
+              ? 'ac-modal-in left-1/2 top-1/2 h-[90vh] w-[95vw] max-w-6xl -translate-x-1/2 -translate-y-1/2 rounded-xl border'
+              : 'ac-drawer-in right-0 top-0 h-full w-full max-w-xl border-l',
             className,
           )}
         >
@@ -82,5 +87,29 @@ export function Drawer({ aberto, onAbrir, titulo, descricao, children, rodape, c
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+  )
+}
+
+/**
+ * Botão "Cancelar" padrão do rodapé: confirma antes de fechar, para não descartar o formulário por
+ * engano. O X do cabeçalho fecha direto; só o Cancelar pergunta.
+ */
+export function DrawerCancelar({
+  onAbrir,
+  rotulo = 'Cancelar',
+}: {
+  onAbrir: (v: boolean) => void
+  rotulo?: string
+}) {
+  return (
+    <Button
+      variant="secondary"
+      type="button"
+      onClick={() => {
+        if (window.confirm('Descartar as alterações e fechar?')) onAbrir(false)
+      }}
+    >
+      {rotulo}
+    </Button>
   )
 }
