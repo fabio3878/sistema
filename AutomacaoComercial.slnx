@@ -21,6 +21,13 @@
     <Project Path="src/Modulos/Cadastros/Cadastros.Http/Cadastros.Http.csproj" />
     <Project Path="src/Modulos/Cadastros/Cadastros.Infraestrutura/Cadastros.Infraestrutura.csproj" />
   </Folder>
+  <Folder Name="/src/Modulos/Financeiro/">
+    <Project Path="src/Modulos/Financeiro/Financeiro.Aplicacao/Financeiro.Aplicacao.csproj" />
+    <Project Path="src/Modulos/Financeiro/Financeiro.Contratos/Financeiro.Contratos.csproj" />
+    <Project Path="src/Modulos/Financeiro/Financeiro.Dominio/Financeiro.Dominio.csproj" />
+    <Project Path="src/Modulos/Financeiro/Financeiro.Http/Financeiro.Http.csproj" />
+    <Project Path="src/Modulos/Financeiro/Financeiro.Infraestrutura/Financeiro.Infraestrutura.csproj" />
+  </Folder>
   <Folder Name="/src/Plataforma/">
     <Project Path="src/Plataforma/Plataforma.Aplicacao/Plataforma.Aplicacao.csproj" />
     <Project Path="src/Plataforma/Plataforma.Dominio/Plataforma.Dominio.csproj" />
@@ -30,6 +37,7 @@
     <Project Path="tests/Acesso.Tests/Acesso.Tests.csproj" />
     <Project Path="tests/Arquitetura.Tests/Arquitetura.Tests.csproj" />
     <Project Path="tests/Cadastros.Tests/Cadastros.Tests.csproj" />
+    <Project Path="tests/Financeiro.Tests/Financeiro.Tests.csproj" />
     <Project Path="tests/Plataforma.Tests/Plataforma.Tests.csproj" />
   </Folder>
 </Solution>

@@ -7,7 +7,7 @@ export type Requisitar = <T>(
 ) => Promise<T>
 
 /** Grupo de endpoint por módulo: cad → /cad/auditoria, acs → /acesso/auditoria. */
-const grupo: Record<ModuloAuditoria, string> = { cad: '/cad', acs: '/acesso' }
+const grupo: Record<ModuloAuditoria, string> = { cad: '/cad', acs: '/acesso', fin: '/fin' }
 
 export function listarAuditoria(
   req: Requisitar,

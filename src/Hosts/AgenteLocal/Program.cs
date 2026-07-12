@@ -4,6 +4,8 @@ using Acesso.Infraestrutura;
 using BuildingBlocks;
 using Cadastros.Http;
 using Cadastros.Infraestrutura;
+using Financeiro.Http;
+using Financeiro.Infraestrutura;
 using JasperFx;
 using JasperFx.Resources;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +36,7 @@ builder.Services.ConfigureHttpJsonOptions(o =>
 // Novos módulos entram nesta lista — cada um se auto-registra via IModulo.
 // Exceção: "Acesso" é SEMPRE ativo (autenticação não é licenciável).
 var licenca = new LicencaLocal();
-IModulo[] modulos = [new AcessoModulo(), new CadastrosModulo()];
+IModulo[] modulos = [new AcessoModulo(), new CadastrosModulo(), new FinanceiroModulo()];
 var migrationRegistry = new MigrationRegistry();
 
 // Manifesto de funcionalidades agregado dos módulos ativos → reconciliado no catálogo pelo seeder.
@@ -97,6 +99,9 @@ app.MapAcessoEndpoints();
 // Endpoints dos módulos licenciados (serviços só registrados se ativos — ver laço acima).
 if (licenca.ModuloAtivo("Cadastros"))
     app.MapCadastrosEndpoints();
+
+if (licenca.ModuloAtivo("Financeiro"))
+    app.MapFinanceiroEndpoints();
 
 return await app.RunJasperFxCommands(args);
 

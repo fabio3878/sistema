@@ -12,6 +12,8 @@ import { ClientesPage } from '@/paginas/clientes'
 import { ProdutosPage } from '@/paginas/produtos'
 import { ServicosPage } from '@/paginas/servicos'
 import { AuditoriaPage } from '@/paginas/auditoria'
+import { ContasReceberPage } from '@/paginas/contas-receber'
+import { FormasPagamentoPage } from '@/paginas/formas-pagamento'
 import { PlaceholderPage } from '@/paginas/placeholder'
 
 /** Decide entre login e casca conforme o estado de autenticação. */
@@ -38,7 +40,8 @@ function Raiz() {
           <Route path="/servicos" element={<ServicosPage />} />
           <Route path="/auditoria" element={<AuditoriaPage />} />
           <Route path="/vendas" element={<PlaceholderPage titulo="Vendas" />} />
-          <Route path="/financeiro" element={<PlaceholderPage titulo="Financeiro" />} />
+          <Route path="/contas-receber" element={<ContasReceberPage />} />
+          <Route path="/formas-pagamento" element={<FormasPagamentoPage />} />
         </Routes>
       </AppShell>
     </BrowserRouter>

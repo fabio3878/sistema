@@ -5,6 +5,7 @@ import {
   Wrench,
   ShoppingCart,
   Wallet,
+  CreditCard,
   ScrollText,
   type LucideIcon,
 } from 'lucide-react'
@@ -63,8 +64,11 @@ export const NAV: ItemNav[] = [
     icone: ScrollText,
     modulo: 'cad',
     funcionalidade: 'cad.auditoria.ver',
-    // Cruza dois módulos: aparece para quem vê a trilha de Cadastros OU de Segurança (Acesso).
-    requerQualquer: [{ modulo: 'acs', funcionalidade: 'acs.auditoria.ver' }],
+    // Cruza módulos: aparece para quem vê a trilha de Cadastros, Financeiro OU Segurança (Acesso).
+    requerQualquer: [
+      { modulo: 'fin', funcionalidade: 'fin.auditoria.ver' },
+      { modulo: 'acs', funcionalidade: 'acs.auditoria.ver' },
+    ],
   },
   {
     rota: '/vendas',
@@ -74,10 +78,17 @@ export const NAV: ItemNav[] = [
     funcionalidade: 'ven.venda.listar',
   },
   {
-    rota: '/financeiro',
-    titulo: 'Financeiro',
+    rota: '/contas-receber',
+    titulo: 'Contas a receber',
     icone: Wallet,
     modulo: 'fin',
-    funcionalidade: 'fin.lancamento.listar',
+    funcionalidade: 'fin.contareceber.listar',
+  },
+  {
+    rota: '/formas-pagamento',
+    titulo: 'Formas de pagamento',
+    icone: CreditCard,
+    modulo: 'fin',
+    funcionalidade: 'fin.formapagamento.listar',
   },
 ]

@@ -25,6 +25,9 @@
     <ProjectReference Include="..\..\src\Modulos\Cadastros\Cadastros.Dominio\Cadastros.Dominio.csproj" />
     <ProjectReference Include="..\..\src\Modulos\Cadastros\Cadastros.Http\Cadastros.Http.csproj" />
     <ProjectReference Include="..\..\src\Modulos\Cadastros\Cadastros.Infraestrutura\Cadastros.Infraestrutura.csproj" />
+    <ProjectReference Include="..\..\src\Modulos\Financeiro\Financeiro.Dominio\Financeiro.Dominio.csproj" />
+    <ProjectReference Include="..\..\src\Modulos\Financeiro\Financeiro.Http\Financeiro.Http.csproj" />
+    <ProjectReference Include="..\..\src\Modulos\Financeiro\Financeiro.Infraestrutura\Financeiro.Infraestrutura.csproj" />
     <ProjectReference Include="..\..\src\Plataforma\Plataforma.Infraestrutura\Plataforma.Infraestrutura.csproj" />
     <ProjectReference Include="..\..\src\Compartilhado\BuildingBlocks\BuildingBlocks.csproj" />
   </ItemGroup>

@@ -17,6 +17,7 @@ const classeSelect =
 
 const TODOS_MODULOS: { id: ModuloAuditoria; label: string; funcionalidade: string }[] = [
   { id: 'cad', label: 'Cadastros', funcionalidade: 'cad.auditoria.ver' },
+  { id: 'fin', label: 'Financeiro', funcionalidade: 'fin.auditoria.ver' },
   { id: 'acs', label: 'Segurança', funcionalidade: 'acs.auditoria.ver' },
 ]
 

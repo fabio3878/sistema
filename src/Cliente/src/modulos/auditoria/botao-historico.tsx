@@ -15,6 +15,7 @@ interface Props {
 const funcPorModulo: Record<ModuloAuditoria, string> = {
   cad: 'cad.auditoria.ver',
   acs: 'acs.auditoria.ver',
+  fin: 'fin.auditoria.ver',
 }
 
 /**

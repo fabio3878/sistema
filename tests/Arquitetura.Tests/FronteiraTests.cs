@@ -2,6 +2,8 @@ using Acesso.Contratos;
 using Acesso.Dominio;
 using Cadastros.Contratos;
 using Cadastros.Dominio;
+using Financeiro.Contratos;
+using Financeiro.Dominio;
 using NetArchTest.Rules;
 
 namespace Arquitetura.Tests;
@@ -95,6 +97,52 @@ public class FronteiraTests
                 "Cadastros.Infraestrutura",
                 "Acesso.Dominio",
                 "Acesso.Infraestrutura",
+                "Microsoft.EntityFrameworkCore")
+            .GetResult();
+
+        Assert.True(resultado.IsSuccessful, Falhas(resultado));
+    }
+
+    [Fact]
+    public void Financeiro_Dominio_nao_depende_de_infraestrutura_nem_de_aplicacao()
+    {
+        var resultado = Types.InAssembly(typeof(ContaReceber).Assembly)
+            .That().ResideInNamespace("Financeiro.Dominio")
+            .ShouldNot().HaveDependencyOnAny(
+                "Financeiro.Aplicacao",
+                "Financeiro.Infraestrutura",
+                "Plataforma.Aplicacao",
+                "Plataforma.Infraestrutura",
+                "Microsoft.EntityFrameworkCore")
+            .GetResult();
+
+        Assert.True(resultado.IsSuccessful, Falhas(resultado));
+    }
+
+    [Fact]
+    public void Financeiro_Contratos_e_folha_depende_so_de_buildingblocks()
+    {
+        var resultado = Types.InAssembly(typeof(ContaReceberDto).Assembly)
+            .ShouldNot().HaveDependencyOnAny(
+                "Financeiro.Dominio",
+                "Financeiro.Aplicacao",
+                "Financeiro.Infraestrutura",
+                "Microsoft.EntityFrameworkCore")
+            .GetResult();
+
+        Assert.True(resultado.IsSuccessful, Falhas(resultado));
+    }
+
+    [Fact]
+    public void Financeiro_Http_nao_depende_de_infra_nem_de_outros_modulos()
+    {
+        var resultado = Types.InAssembly(typeof(Financeiro.Http.FinanceiroEndpoints).Assembly)
+            .ShouldNot().HaveDependencyOnAny(
+                "Financeiro.Infraestrutura",
+                "Acesso.Dominio",
+                "Acesso.Infraestrutura",
+                "Cadastros.Dominio",
+                "Cadastros.Infraestrutura",
                 "Microsoft.EntityFrameworkCore")
             .GetResult();
 

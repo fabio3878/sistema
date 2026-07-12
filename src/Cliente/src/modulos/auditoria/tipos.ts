@@ -4,8 +4,8 @@
  */
 export type Operacao = 'Criacao' | 'Alteracao' | 'Exclusao'
 
-/** Módulos que expõem trilha (mapeia para o grupo de endpoint: cad → /cad, acs → /acesso). */
-export type ModuloAuditoria = 'cad' | 'acs'
+/** Módulos que expõem trilha (mapeia para o grupo de endpoint: cad → /cad, acs → /acesso, fin → /fin). */
+export type ModuloAuditoria = 'cad' | 'acs' | 'fin'
 
 export interface RegistroAuditoria {
   id: string
