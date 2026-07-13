@@ -117,9 +117,13 @@ interface Props {
   aberto: boolean
   onAbrir: (v: boolean) => void
   clienteId: string | null
+  /** Chamado após CRIAR (não edição) — devolve o cliente recém-criado (ex.: para auto-selecionar). */
+  onCriado?: (cliente: { id: string; nome: string }) => void
+  /** Repassado ao Drawer: controla o foco ao fechar (ex.: avançar para o próximo campo do form pai). */
+  onCloseAutoFocus?: (e: Event) => void
 }
 
-export function ClienteDrawer({ aberto, onAbrir, clienteId }: Props) {
+export function ClienteDrawer({ aberto, onAbrir, clienteId, onCriado, onCloseAutoFocus }: Props) {
   const { requisitar } = useAuth()
   const qc = useQueryClient()
   const [erro, setErro] = useState<string | null>(null)
@@ -205,13 +209,18 @@ export function ClienteDrawer({ aberto, onAbrir, clienteId }: Props) {
   }, [aberto, editando, detalhe.data, reset])
 
   const salvar = useMutation({
-    mutationFn: async (dados: ClienteEntrada) => {
-      if (editando) await atualizarCliente(requisitar, clienteId!, dados)
-      else await criarCliente(requisitar, dados)
+    mutationFn: async (dados: ClienteEntrada): Promise<string | null> => {
+      if (editando) {
+        await atualizarCliente(requisitar, clienteId!, dados)
+        return null
+      }
+      const r = await criarCliente(requisitar, dados)
+      return r.id
     },
-    onSuccess: async () => {
+    onSuccess: async (id, dados) => {
       await qc.invalidateQueries({ queryKey: ['clientes'] })
       if (editando) await qc.invalidateQueries({ queryKey: ['cliente', clienteId] })
+      else if (id && onCriado) onCriado({ id, nome: dados.nome })
       onAbrir(false)
     },
     onError: (e) => {
@@ -279,6 +288,7 @@ export function ClienteDrawer({ aberto, onAbrir, clienteId }: Props) {
     <Drawer
       aberto={aberto}
       onAbrir={onAbrir}
+      onCloseAutoFocus={onCloseAutoFocus}
       titulo={editando ? 'Editar cliente' : 'Novo cliente'}
       descricao={editando ? 'Altere os dados e salve.' : 'Preencha os dados do cliente.'}
       rodape={

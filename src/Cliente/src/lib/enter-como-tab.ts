@@ -1,8 +1,12 @@
 import type { KeyboardEvent } from 'react'
 
-/** Elementos focáveis, em ordem de documento (mesmo conjunto que o Tab percorre). */
+/**
+ * Elementos focáveis por Tab, em ordem de documento. O `:not([tabindex="-1"])` precisa ir em CADA
+ * cláusula: sem ele, `button:not([disabled])` casaria também botões com `tabindex="-1"` (que o Tab pula,
+ * ex.: o "+" do seletor de cliente). Assim o conjunto reflete de fato o que o Tab percorre.
+ */
 export const FOCAVEIS =
-  'input:not([disabled]),select:not([disabled]),textarea:not([disabled]),button:not([disabled]),[tabindex]:not([tabindex="-1"])'
+  'input:not([disabled]):not([tabindex="-1"]),select:not([disabled]):not([tabindex="-1"]),textarea:not([disabled]):not([tabindex="-1"]),button:not([disabled]):not([tabindex="-1"]),[tabindex]:not([tabindex="-1"])'
 
 /**
  * Enter num campo avança para o próximo (como Tab), em vez de submeter no meio do preenchimento;

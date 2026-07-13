@@ -15,6 +15,11 @@ interface DrawerProps {
   /** Rodapé fixo (ações). Fica colado embaixo, fora da área rolável. */
   rodape?: ReactNode
   className?: string
+  /**
+   * Ao fechar, controla para onde volta o foco (repassado ao `Dialog.Content`). Se omitido, o Radix
+   * devolve o foco ao gatilho (padrão). Chame `e.preventDefault()` para assumir o controle do foco.
+   */
+  onCloseAutoFocus?: (e: Event) => void
 }
 
 const DrawerContext = createContext(false)
@@ -29,7 +34,7 @@ export function useDrawerMaximizado() {
  * maximizar ⇄ restaurar (alterna para um modal central grande). Cabeçalho e rodapé fixos, corpo
  * rolável. Base no Radix Dialog (acessível, foco preso, Esc fecha).
  */
-export function Drawer({ aberto, onAbrir, titulo, descricao, children, rodape, className }: DrawerProps) {
+export function Drawer({ aberto, onAbrir, titulo, descricao, children, rodape, className, onCloseAutoFocus }: DrawerProps) {
   // Abre maximizado (modal central) por padrão; o usuário pode restaurar para lateral na sessão.
   const [maximizado, setMaximizado] = useState(true)
   // Arraste pela barra de título só no modo maximizado (flutuante); recentra ao alternar o modo.
@@ -56,6 +61,8 @@ export function Drawer({ aberto, onAbrir, titulo, descricao, children, rodape, c
               alvo.focus()
             }
           }}
+          // Ao fechar, quem chamou pode redirecionar o foco (ex.: avançar para o próximo campo).
+          onCloseAutoFocus={onCloseAutoFocus}
           // Fechar só pelo X (ou Cancelar): clicar fora e Esc não fecham, para não perder o formulário.
           onEscapeKeyDown={(e) => e.preventDefault()}
           onPointerDownOutside={(e) => e.preventDefault()}
