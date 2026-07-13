@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { ChevronsUpDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { FOCAVEIS } from '@/lib/enter-como-tab'
 import { Badge } from '@/components/ui/badge'
 import { SeletorRegistro, type ColunaSeletor } from '@/components/ui/seletor-registro'
 import { useAuth } from '@/lib/auth'
@@ -112,6 +113,19 @@ export function SeletorCliente({ value, onChange, disabled, placeholder = 'Selec
   const { requisitar } = useAuth()
   const [aberto, setAberto] = useState(false)
   const [rotulo, setRotulo] = useState(rotuloInicial ?? '')
+  const gatilhoRef = useRef<HTMLButtonElement>(null)
+
+  /** Após escolher, avança o foco para o próximo campo do formulário (em vez de voltar ao gatilho). */
+  const avancarFoco = () => {
+    const g = gatilhoRef.current
+    const form = g?.closest('form')
+    if (!g || !form) return
+    const itens = Array.from(form.querySelectorAll<HTMLElement>(FOCAVEIS)).filter((el) => el === g || el.offsetParent !== null)
+    const prox = itens[itens.indexOf(g) + 1]
+    if (!prox) return
+    prox.focus()
+    if (prox instanceof HTMLInputElement && /^(text|number|search|tel|url|email|password|)$/.test(prox.type)) prox.select()
+  }
 
   const buscar = useMemo(
     () => (termo: string, signal?: AbortSignal) =>
@@ -124,6 +138,7 @@ export function SeletorCliente({ value, onChange, disabled, placeholder = 'Selec
   return (
     <>
       <button
+        ref={gatilhoRef}
         type="button"
         disabled={disabled}
         onClick={() => setAberto(true)}
@@ -150,6 +165,8 @@ export function SeletorCliente({ value, onChange, disabled, placeholder = 'Selec
           setRotulo(c.nome)
           onChange(c.id, c.nome)
         }}
+        // No fechamento (momento em que o Radix devolveria o foco): avança ao selecionar; volta ao gatilho ao cancelar.
+        aoFechar={(selecionou) => (selecionou ? avancarFoco() : gatilhoRef.current?.focus())}
       />
     </>
   )

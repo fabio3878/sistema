@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2, X } from 'lucide-react'
+import { useJanelaArrastavel } from '@/lib/use-janela-arrastavel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/lib/auth'
@@ -33,6 +34,7 @@ interface Props {
 export function TrocarSenhaDialog({ aberto, onAbrir }: Props) {
   const { trocarSenha } = useAuth()
   const [erro, setErro] = useState<string | null>(null)
+  const { alvoRef, estilo, propsBarra } = useJanelaArrastavel(aberto)
   const {
     register,
     handleSubmit,
@@ -56,8 +58,12 @@ export function TrocarSenhaDialog({ aberto, onAbrir }: Props) {
     <Dialog.Root open={aberto} onOpenChange={onAbrir}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-elevated p-6 shadow-drawer focus:outline-none">
-          <div className="mb-4 flex items-start justify-between">
+        <Dialog.Content
+          ref={alvoRef}
+          style={estilo}
+          className="fixed left-1/2 top-1/2 z-50 w-full max-w-md rounded-xl border border-border bg-elevated p-6 shadow-drawer focus:outline-none"
+        >
+          <div {...propsBarra} className="mb-4 flex cursor-move select-none items-start justify-between">
             <div>
               <Dialog.Title className="text-h3 text-fg">Trocar senha</Dialog.Title>
               <Dialog.Description className="text-small text-fg-muted">

@@ -15,6 +15,7 @@ import {
 } from '@tanstack/react-table'
 import { ArrowUpDown, Columns3, RotateCcw, Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useJanelaArrastavel } from '@/lib/use-janela-arrastavel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -43,6 +44,12 @@ interface Props<T> {
   /** Chave do localStorage p/ persistir a visibilidade das colunas (uma por entidade). */
   storageKey: string
   placeholderBusca?: string
+  /**
+   * Chamado quando a janela fecha, no momento em que o Radix devolveria o foco (`onCloseAutoFocus`).
+   * `selecionou` = fechou por ter escolhido um item. O caller controla o foco (o padrão do Radix é
+   * suprimido), então dá para avançar para o próximo campo ao selecionar ou voltar ao gatilho ao cancelar.
+   */
+  aoFechar?: (selecionou: boolean) => void
 }
 
 /**
@@ -94,6 +101,7 @@ export function SeletorRegistro<T>({
   onSelecionar,
   storageKey,
   placeholderBusca = 'Buscar…',
+  aoFechar,
 }: Props<T>) {
   const [termo, setTermo] = useState('')
   const [termoBusca, setTermoBusca] = useState('')
@@ -105,6 +113,8 @@ export function SeletorRegistro<T>({
   const cursorRef = useRef(cursor)
   cursorRef.current = cursor
   const inputRef = useRef<HTMLInputElement>(null)
+  const selecionouRef = useRef(false)
+  const { alvoRef, estilo, propsBarra } = useJanelaArrastavel(aberto)
 
   // Debounce da busca (300ms).
   useEffect(() => {
@@ -199,6 +209,7 @@ export function SeletorRegistro<T>({
   })
 
   const escolher = (row: T) => {
+    selecionouRef.current = true
     onSelecionar(row)
     onAbrir(false)
   }
@@ -275,15 +286,24 @@ export function SeletorRegistro<T>({
       <Dialog.Portal>
         <Dialog.Overlay className="ac-overlay-in fixed inset-0 z-[70] bg-black/40" />
         <Dialog.Content
+          ref={alvoRef}
+          style={estilo}
           aria-describedby={undefined}
           // Ao abrir, foca o campo de busca (digitar já filtra) em vez do 1º elemento tabulável.
           onOpenAutoFocus={(e) => {
             e.preventDefault()
             inputRef.current?.focus()
           }}
-          className="ac-pop-in fixed left-1/2 top-1/2 z-[80] flex max-h-[85vh] w-[92vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-border bg-elevated shadow-drawer focus:outline-none"
+          // Ao fechar, o caller decide o foco (avança se selecionou; volta ao gatilho se cancelou).
+          onCloseAutoFocus={(e) => {
+            if (!aoFechar) return
+            e.preventDefault()
+            aoFechar(selecionouRef.current)
+            selecionouRef.current = false
+          }}
+          className="ac-modal-in fixed left-1/2 top-1/2 z-[80] flex max-h-[85vh] w-[92vw] max-w-4xl flex-col rounded-xl border border-border bg-elevated shadow-drawer focus:outline-none"
         >
-          <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-3.5">
+          <div {...propsBarra} className="flex cursor-move select-none items-center justify-between gap-4 border-b border-border px-5 py-3.5">
             <Dialog.Title className="text-h3 text-fg">{titulo}</Dialog.Title>
             <Dialog.Close asChild>
               <Button variant="ghost" size="icon" aria-label="Fechar">

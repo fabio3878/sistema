@@ -1,7 +1,9 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { Maximize2, Minimize2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useJanelaArrastavel } from '@/lib/use-janela-arrastavel'
+import { FOCAVEIS } from '@/lib/enter-como-tab'
 import { Button } from '@/components/ui/button'
 
 interface DrawerProps {
@@ -30,6 +32,9 @@ export function useDrawerMaximizado() {
 export function Drawer({ aberto, onAbrir, titulo, descricao, children, rodape, className }: DrawerProps) {
   // Abre maximizado (modal central) por padrão; o usuário pode restaurar para lateral na sessão.
   const [maximizado, setMaximizado] = useState(true)
+  // Arraste pela barra de título só no modo maximizado (flutuante); recentra ao alternar o modo.
+  const { alvoRef, estilo, propsBarra } = useJanelaArrastavel(aberto, maximizado)
+  const corpoRef = useRef<HTMLDivElement>(null)
 
   // Ao (re)abrir, volta ao modo maximizado.
   useEffect(() => {
@@ -41,6 +46,16 @@ export function Drawer({ aberto, onAbrir, titulo, descricao, children, rodape, c
       <Dialog.Portal>
         <Dialog.Overlay className="ac-overlay-in fixed inset-0 z-50 bg-black/40" />
         <Dialog.Content
+          ref={alvoRef}
+          style={maximizado ? estilo : undefined}
+          // Ao abrir, foca o 1º campo do corpo (ex.: Cliente) em vez do botão de maximizar/fechar do cabeçalho.
+          onOpenAutoFocus={(e) => {
+            const alvo = corpoRef.current?.querySelector<HTMLElement>(FOCAVEIS)
+            if (alvo) {
+              e.preventDefault()
+              alvo.focus()
+            }
+          }}
           // Fechar só pelo X (ou Cancelar): clicar fora e Esc não fecham, para não perder o formulário.
           onEscapeKeyDown={(e) => e.preventDefault()}
           onPointerDownOutside={(e) => e.preventDefault()}
@@ -48,12 +63,18 @@ export function Drawer({ aberto, onAbrir, titulo, descricao, children, rodape, c
           className={cn(
             'fixed z-50 flex flex-col border-border bg-elevated shadow-drawer focus:outline-none',
             maximizado
-              ? 'ac-modal-in left-1/2 top-1/2 h-[90vh] w-[95vw] max-w-6xl -translate-x-1/2 -translate-y-1/2 rounded-xl border'
+              ? 'ac-modal-in left-1/2 top-1/2 h-[90vh] w-[95vw] max-w-6xl rounded-xl border'
               : 'ac-drawer-in right-0 top-0 h-full w-full max-w-xl border-l',
             className,
           )}
         >
-          <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
+          <div
+            {...(maximizado ? propsBarra : {})}
+            className={cn(
+              'flex items-start justify-between gap-4 border-b border-border px-6 py-4',
+              maximizado && 'cursor-move select-none',
+            )}
+          >
             <div className="min-w-0">
               <Dialog.Title className="text-h3 text-fg">{titulo}</Dialog.Title>
               {descricao && (
@@ -77,7 +98,7 @@ export function Drawer({ aberto, onAbrir, titulo, descricao, children, rodape, c
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+          <div ref={corpoRef} className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
             <DrawerContext.Provider value={maximizado}>{children}</DrawerContext.Provider>
           </div>
 
