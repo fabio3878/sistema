@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { enterComoTab } from '@/lib/enter-como-tab'
 import { BotaoHistorico } from '@/modulos/auditoria/botao-historico'
 import { atualizarCliente, criarCliente, listarEstados, listarMunicipios, obterCliente } from './api'
 import { mascararCep, mascararDocumento, mascararTelefone, soDigitos, validarCnpj, validarCpf } from './formato'
@@ -296,7 +297,7 @@ export function ClienteDrawer({ aberto, onAbrir, clienteId }: Props) {
           <Loader2 className="size-6 animate-spin" />
         </div>
       ) : (
-        <form id="form-cliente" onSubmit={onSubmit} className="space-y-6" noValidate>
+        <form id="form-cliente" onSubmit={onSubmit} onKeyDown={enterComoTab} className="space-y-6" noValidate>
           {erro && <div className="rounded-md bg-danger-bg px-3 py-2 text-small text-danger">{erro}</div>}
 
           {/* Tipo de pessoa — segmented */}

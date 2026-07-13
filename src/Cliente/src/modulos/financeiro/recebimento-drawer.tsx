@@ -8,6 +8,7 @@ import { Combobox } from '@/components/ui/combobox'
 import { Drawer, DrawerCancelar } from '@/components/ui/drawer'
 import { ApiError } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { enterComoTab } from '@/lib/enter-como-tab'
 import { listarFormas, registrarRecebimento, sugerirRecebimento } from './api'
 import { formatarData, formatarMoeda, hojeIso } from './formato'
 import type { ContaReceber, Parcela, RecebimentoEntrada } from './tipos'
@@ -116,7 +117,7 @@ export function RecebimentoDrawer({ aberto, onAbrir, conta, parcela }: Props) {
         </>
       }
     >
-      <form id="form-receb" onSubmit={onSubmit} className="space-y-6" noValidate>
+      <form id="form-receb" onSubmit={onSubmit} onKeyDown={enterComoTab} className="space-y-6" noValidate>
         {erro && <div className="rounded-md bg-danger-bg px-3 py-2 text-small text-danger">{erro}</div>}
 
         {parcela && (

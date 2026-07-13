@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Drawer, DrawerCancelar } from '@/components/ui/drawer'
 import { ApiError } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { enterComoTab } from '@/lib/enter-como-tab'
 import { atualizarParametros, obterParametros } from './api'
 
 interface Props {
@@ -79,7 +80,7 @@ export function ParametrosDrawer({ aberto, onAbrir, podeEditar }: Props) {
         )
       }
     >
-      <form id="form-parametros" onSubmit={onSubmit} className="space-y-4" noValidate>
+      <form id="form-parametros" onSubmit={onSubmit} onKeyDown={enterComoTab} className="space-y-4" noValidate>
         {erro && <div className="rounded-md bg-danger-bg px-3 py-2 text-small text-danger">{erro}</div>}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">

@@ -11,6 +11,7 @@ import { Drawer, DrawerCancelar, useDrawerMaximizado } from '@/components/ui/dra
 import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { enterComoTab } from '@/lib/enter-como-tab'
 import { listarUnidades } from '@/modulos/cadastros/unidades'
 import { BotaoHistorico } from '@/modulos/auditoria/botao-historico'
 import { atualizarServico, criarServico, obterServico } from './api'
@@ -134,7 +135,7 @@ export function ServicoDrawer({ aberto, onAbrir, servicoId }: Props) {
           <Loader2 className="size-6 animate-spin" />
         </div>
       ) : (
-        <form id="form-servico" onSubmit={onSubmit} className="space-y-6" noValidate>
+        <form id="form-servico" onSubmit={onSubmit} onKeyDown={enterComoTab} className="space-y-6" noValidate>
           {erro && <div className="rounded-md bg-danger-bg px-3 py-2 text-small text-danger">{erro}</div>}
 
           <Secao titulo="Identificação">
