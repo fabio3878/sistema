@@ -22,6 +22,7 @@ public sealed class ContaReceberRepositorio(FinanceiroDbContext db) : IContaRece
     public Task<ContaReceber?> ObterPorId(string empresaId, string id, CancellationToken ct = default) =>
         db.Contas
             .Include(c => c.Parcelas).ThenInclude(p => p.Recebimentos)
+            .Include(c => c.Renegociacoes)
             .FirstOrDefaultAsync(c => c.EmpresaId == empresaId && c.Id == id, ct);
 
     public Task<ContaReceber?> ObterPorParcela(string empresaId, string parcelaId, CancellationToken ct = default) =>
@@ -67,6 +68,7 @@ public sealed class ContaReceberRepositorio(FinanceiroDbContext db) : IContaRece
             .OrderByDescending(c => c.DataEmissao).ThenByDescending(c => c.Id)
             .Skip((pagina - 1) * tamanho).Take(tamanho)
             .Include(c => c.Parcelas).ThenInclude(p => p.Recebimentos)
+            .Include(c => c.Renegociacoes)
             .ToListAsync(ct);
 
         return new PaginaResultado<ContaReceber>(itens, total, pagina, tamanho);

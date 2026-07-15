@@ -22,7 +22,8 @@ public sealed record ContaReceberDto(
     decimal TotalRecebido,
     decimal SaldoTotal,
     SituacaoConta Situacao,
-    IReadOnlyList<ParcelaDto> Parcelas);
+    IReadOnlyList<ParcelaDto> Parcelas,
+    IReadOnlyList<RenegociacaoDto> Renegociacoes);
 
 /// <summary>Parcela com seus recebimentos e os valores derivados (saldo, juros, status, dias em atraso).</summary>
 public sealed record ParcelaDto(
@@ -41,6 +42,7 @@ public sealed record ParcelaDto(
     int DiasAtraso,
     StatusParcela Status,
     string? Observacoes,
+    string? RenegociacaoId,
     IReadOnlyList<RecebimentoDto> Recebimentos);
 
 /// <summary>Recebimento (baixa) de uma parcela — imutável; correção é via estorno.</summary>
@@ -141,6 +143,45 @@ public sealed record RecebimentoEntradaDto(
 
 /// <summary>Payload de estorno de um recebimento.</summary>
 public sealed record EstornoEntradaDto(string? Motivo);
+
+// ─────────────────────────────── Renegociação ───────────────────────────────
+
+/// <summary>Uma renegociação de uma conta: consolidou parcelas de origem e gerou um novo plano.</summary>
+public sealed record RenegociacaoDto(
+    string Id,
+    DateOnly Data,
+    decimal ValorBase,
+    decimal Desconto,
+    decimal Entrada,
+    decimal ValorRenegociado,
+    string? Observacoes);
+
+/// <summary>Sugestão para renegociar as parcelas selecionadas (saldo consolidado + encargos até hoje).</summary>
+public sealed record SugestaoRenegociacaoDto(
+    decimal SaldoPrincipal,
+    decimal Juros,
+    decimal Multa,
+    decimal SaldoAtualizado,
+    int QtdParcelas);
+
+/// <summary>
+/// Payload de renegociação. As <see cref="ParcelaIds"/> (todas da mesma conta) são consolidadas:
+/// base = saldo principal, ou saldo atualizado (com juros/multa) se <see cref="IncluirEncargos"/>.
+/// O valor a reparcelar = base − <see cref="Desconto"/> − <see cref="Entrada"/>. Se
+/// <see cref="Parcelas"/> vier vazio, o novo plano é gerado por quantidade/vencimento/intervalo.
+/// Se <see cref="Entrada"/> &gt; 0, vira um recebimento na 1ª parcela gerada (exige a forma).
+/// </summary>
+public sealed record RenegociacaoEntradaDto(
+    IReadOnlyList<string> ParcelaIds,
+    DateOnly PrimeiroVencimento,
+    int QuantidadeParcelas,
+    bool IncluirEncargos = false,
+    decimal Desconto = 0,
+    decimal Entrada = 0,
+    string? EntradaFormaPagamentoId = null,
+    int IntervaloDias = 30,
+    IReadOnlyList<ParcelaEntradaDto>? Parcelas = null,
+    string? Observacoes = null);
 
 // ─────────────────────────────── Forma de pagamento (cadastro) ───────────────────────────────
 

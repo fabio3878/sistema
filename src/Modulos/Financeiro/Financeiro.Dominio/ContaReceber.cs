@@ -34,6 +34,7 @@ public sealed record PlanoParcela(
 public sealed class ContaReceber : EntidadeBase
 {
     private readonly List<Parcela> _parcelas = [];
+    private readonly List<Renegociacao> _renegociacoes = [];
 
     public string ClienteId { get; private set; } = default!;
     public string? Descricao { get; private set; }
@@ -48,6 +49,7 @@ public sealed class ContaReceber : EntidadeBase
     public string? UsuarioResponsavelId { get; private set; }
 
     public IReadOnlyCollection<Parcela> Parcelas => _parcelas.AsReadOnly();
+    public IReadOnlyCollection<Renegociacao> Renegociacoes => _renegociacoes.AsReadOnly();
 
     private ContaReceber() { }
 
@@ -159,6 +161,72 @@ public sealed class ContaReceber : EntidadeBase
         ValorTotal = _parcelas.Where(p => !p.Cancelada).Sum(p => p.ValorOriginal);
         MarcarAtualizado();
         return Result.Ok();
+    }
+
+    /// <summary>
+    /// Renegocia parcelas em aberto desta conta: fecha as <paramref name="parcelaIds"/> como
+    /// <see cref="Parcela.Renegociada"/> e anexa o <paramref name="novoPlano"/> (parcelas geradas) à mesma
+    /// conta, vinculadas pela renegociação criada. Não recalcula <see cref="ValorTotal"/> — que segue como
+    /// valor originalmente contratado; os números vivos são derivados na leitura. A soma do novo plano deve
+    /// bater com o valor a reparcelar (base − desconto − entrada, calculado em <paramref name="info"/>).
+    /// </summary>
+    public Result<Renegociacao> Renegociar(IReadOnlyList<string> parcelaIds, IReadOnlyList<PlanoParcela> novoPlano, DadosRenegociacao info)
+    {
+        if (parcelaIds is null || parcelaIds.Count == 0)
+            return Result<Renegociacao>.Falha("Selecione ao menos uma parcela para renegociar.");
+        if (novoPlano is null || novoPlano.Count == 0)
+            return Result<Renegociacao>.Falha("Informe o novo plano de parcelas.");
+
+        // Resolve as parcelas de origem e valida elegibilidade ANTES de qualquer mutação (evita estado parcial).
+        var origens = new List<Parcela>(parcelaIds.Count);
+        foreach (var id in parcelaIds.Distinct())
+        {
+            var p = _parcelas.FirstOrDefault(x => x.Id == id);
+            if (p is null)
+                return Result<Renegociacao>.Falha("Parcela não encontrada nesta conta.");
+            if (p.Cancelada)
+                return Result<Renegociacao>.Falha("Parcela cancelada não pode ser renegociada.");
+            if (p.Renegociada)
+                return Result<Renegociacao>.Falha("Parcela já foi renegociada.");
+            if (p.SaldoPrincipal <= 0)
+                return Result<Renegociacao>.Falha("Parcela quitada não pode ser renegociada.");
+            origens.Add(p);
+        }
+
+        var criacao = Renegociacao.Criar(EmpresaId, Id, info);
+        if (criacao.Falhou)
+            return criacao;
+        var reneg = criacao.Valor!;
+
+        var soma = novoPlano.Sum(p => p.Valor);
+        if (Math.Abs(soma - reneg.ValorRenegociado) > 0.01m)
+            return Result<Renegociacao>.Falha($"A soma do novo plano (R$ {soma:0.00}) não confere com o valor a reparcelar (R$ {reneg.ValorRenegociado:0.00}).");
+
+        foreach (var origem in origens)
+        {
+            var marca = origem.MarcarRenegociada(reneg.Id);
+            if (marca.Falhou)
+                return Result<Renegociacao>.Falha(marca.Erro!);
+        }
+
+        // Novas parcelas: numeradas continuando após a maior existente; TotalParcelas = tamanho do novo plano.
+        var proximo = _parcelas.Max(p => p.Numero) + 1;
+        var total = novoPlano.Count;
+        var indice = 0;
+        foreach (var item in novoPlano.OrderBy(p => p.Numero))
+        {
+            var plano = item with { Numero = proximo + indice, TotalParcelas = total };
+            var novaParcela = Parcela.Criar(EmpresaId, Id, plano);
+            if (novaParcela.Falhou)
+                return Result<Renegociacao>.Falha(novaParcela.Erro!);
+            novaParcela.Valor!.VincularComoGerada(reneg.Id);
+            _parcelas.Add(novaParcela.Valor!);
+            indice++;
+        }
+
+        _renegociacoes.Add(reneg);
+        MarcarAtualizado();
+        return Result<Renegociacao>.Ok(reneg);
     }
 
     /// <summary>Cancela a conta: cancela as parcelas em aberto (sem recebimento). Parcelas já recebidas permanecem.</summary>

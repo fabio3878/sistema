@@ -10,6 +10,7 @@ import { cancelarConta, estornarRecebimento, listarContas } from '@/modulos/fina
 import { ContasTabela } from '@/modulos/financeiro/contas-tabela'
 import { ContaDrawer } from '@/modulos/financeiro/conta-drawer'
 import { RecebimentoDrawer } from '@/modulos/financeiro/recebimento-drawer'
+import { RenegociacaoDrawer } from '@/modulos/financeiro/renegociacao-drawer'
 import { ParametrosDrawer } from '@/modulos/financeiro/parametros-drawer'
 import type { ContaReceber, FiltroContas, Parcela, Recebimento, SituacaoConta } from '@/modulos/financeiro/tipos'
 
@@ -26,6 +27,7 @@ export function ContasReceberPage() {
   const podeCriar = podeVer(sessao, 'fin', 'fin.contareceber.criar')
   const podeEditar = podeVer(sessao, 'fin', 'fin.contareceber.editar')
   const podeCancelar = podeVer(sessao, 'fin', 'fin.contareceber.cancelar')
+  const podeRenegociar = podeVer(sessao, 'fin', 'fin.contareceber.renegociar')
   const podeReceber = podeVer(sessao, 'fin', 'fin.recebimento.registrar')
   const podeEstornar = podeVer(sessao, 'fin', 'fin.recebimento.estornar')
   const podeParametros = podeVer(sessao, 'fin', 'fin.parametros.ver')
@@ -39,6 +41,8 @@ export function ContasReceberPage() {
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [recebDrawer, setRecebDrawer] = useState(false)
   const [alvo, setAlvo] = useState<{ conta: ContaReceber; parcela: Parcela } | null>(null)
+  const [renegDrawer, setRenegDrawer] = useState(false)
+  const [contaReneg, setContaReneg] = useState<ContaReceber | null>(null)
   const [parametrosDrawer, setParametrosDrawer] = useState(false)
 
   const filtro: FiltroContas = {
@@ -75,6 +79,10 @@ export function ContasReceberPage() {
   const abrirRecebimento = (conta: ContaReceber, parcela: Parcela) => {
     setAlvo({ conta, parcela })
     setRecebDrawer(true)
+  }
+  const abrirRenegociacao = (conta: ContaReceber) => {
+    setContaReneg(conta)
+    setRenegDrawer(true)
   }
   const confirmarCancelar = (conta: ContaReceber) => {
     if (window.confirm(`Cancelar as parcelas em aberto desta conta (${conta.clienteNome ?? conta.clienteId})?`))
@@ -149,10 +157,12 @@ export function ContasReceberPage() {
         carregando={lista.isPending}
         podeEditar={podeEditar}
         podeCancelar={podeCancelar}
+        podeRenegociar={podeRenegociar}
         podeReceber={podeReceber}
         podeEstornar={podeEstornar}
         onEditar={abrirEdicao}
         onCancelar={confirmarCancelar}
+        onRenegociar={abrirRenegociacao}
         onReceber={abrirRecebimento}
         onEstornar={confirmarEstorno}
         onPagina={setPagina}
@@ -160,6 +170,7 @@ export function ContasReceberPage() {
 
       <ContaDrawer aberto={contaDrawer} onAbrir={setContaDrawer} contaId={editandoId} />
       <RecebimentoDrawer aberto={recebDrawer} onAbrir={setRecebDrawer} conta={alvo?.conta ?? null} parcela={alvo?.parcela ?? null} />
+      <RenegociacaoDrawer aberto={renegDrawer} onAbrir={setRenegDrawer} conta={contaReneg} />
       <ParametrosDrawer aberto={parametrosDrawer} onAbrir={setParametrosDrawer} podeEditar={podeVer(sessao, 'fin', 'fin.parametros.editar')} />
     </div>
   )

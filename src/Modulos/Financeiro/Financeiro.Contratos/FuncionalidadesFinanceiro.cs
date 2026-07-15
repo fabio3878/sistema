@@ -15,6 +15,7 @@ public static class FuncionalidadesFinanceiro
     public const string CriarContaReceber = "fin.contareceber.criar";
     public const string EditarContaReceber = "fin.contareceber.editar";
     public const string CancelarContaReceber = "fin.contareceber.cancelar";
+    public const string RenegociarContaReceber = "fin.contareceber.renegociar";
 
     public const string RegistrarRecebimento = "fin.recebimento.registrar";
     public const string EstornarRecebimento = "fin.recebimento.estornar";
@@ -35,6 +36,7 @@ public static class FuncionalidadesFinanceiro
         new(CriarContaReceber, ModuloCodigo, ModuloNome, "Criar conta a receber", "Lançar novas contas a receber."),
         new(EditarContaReceber, ModuloCodigo, ModuloNome, "Editar conta a receber", "Alterar dados de contas a receber e parcelas."),
         new(CancelarContaReceber, ModuloCodigo, ModuloNome, "Cancelar conta a receber", "Cancelar contas a receber em aberto."),
+        new(RenegociarContaReceber, ModuloCodigo, ModuloNome, "Renegociar conta a receber", "Renegociar parcelas em aberto gerando um novo plano."),
         new(RegistrarRecebimento, ModuloCodigo, ModuloNome, "Registrar recebimento", "Dar baixa (total ou parcial) em uma parcela."),
         new(EstornarRecebimento, ModuloCodigo, ModuloNome, "Estornar recebimento", "Estornar um recebimento já lançado."),
         new(ListarFormaPagamento, ModuloCodigo, ModuloNome, "Listar formas de pagamento", "Consultar as formas de pagamento."),

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronRight, Pencil, Ban, HandCoins, Undo2 } from 'lucide-react'
+import { ChevronDown, ChevronRight, Pencil, Ban, HandCoins, Handshake, Undo2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -11,10 +11,12 @@ interface Props {
   carregando: boolean
   podeEditar: boolean
   podeCancelar: boolean
+  podeRenegociar: boolean
   podeReceber: boolean
   podeEstornar: boolean
   onEditar: (conta: ContaReceber) => void
   onCancelar: (conta: ContaReceber) => void
+  onRenegociar: (conta: ContaReceber) => void
   onReceber: (conta: ContaReceber, parcela: Parcela) => void
   onEstornar: (conta: ContaReceber, parcela: Parcela, recebimento: Recebimento) => void
   onPagina: (p: number) => void
@@ -26,10 +28,12 @@ export function ContasTabela({
   carregando,
   podeEditar,
   podeCancelar,
+  podeRenegociar,
   podeReceber,
   podeEstornar,
   onEditar,
   onCancelar,
+  onRenegociar,
   onReceber,
   onEstornar,
   onPagina,
@@ -90,6 +94,9 @@ export function ContasTabela({
               const aberta = contasAbertas.has(conta.id)
               const recebidas = conta.parcelas.filter((p) => p.status === 'Recebida').length
               const cancelavel = conta.situacao !== 'Cancelada' && conta.situacao !== 'Quitada'
+              const renegociavel = conta.parcelas.some(
+                (p) => p.status !== 'Cancelada' && p.status !== 'Renegociada' && p.saldoPrincipal > 0,
+              )
               return (
                 <FragmentConta key={conta.id}>
                   <tr
@@ -125,6 +132,11 @@ export function ContasTabela({
                         {podeEditar && (
                           <Button variant="ghost" size="icon" aria-label="Editar" onClick={() => onEditar(conta)}>
                             <Pencil />
+                          </Button>
+                        )}
+                        {podeRenegociar && renegociavel && (
+                          <Button variant="ghost" size="icon" aria-label="Renegociar" title="Renegociar parcelas" onClick={() => onRenegociar(conta)}>
+                            <Handshake />
                           </Button>
                         )}
                         {podeCancelar && cancelavel && (

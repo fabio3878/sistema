@@ -65,6 +65,35 @@ public sealed class FinanceiroConsulta(
         return new SugestaoRecebimentoDto(hoje, calc.SaldoPrincipal, calc.DiasAtraso, calc.Juros, calc.Multa, calc.SaldoAtualizado);
     }
 
+    public async Task<SugestaoRenegociacaoDto?> SugerirRenegociacao(
+        string empresaId, string contaId, IReadOnlyList<string> parcelaIds, bool incluirEncargos, CancellationToken ct = default)
+    {
+        if (parcelaIds is null || parcelaIds.Count == 0) return null;
+
+        var conta = await contas.ObterPorId(empresaId, contaId, ct);
+        if (conta is null) return null;
+
+        var hoje = Hoje;
+        var (juros, multa) = await CarregarParametros(empresaId, ct);
+        var saldoPrincipal = 0m;
+        var somaJuros = 0m;
+        var somaMulta = 0m;
+        var qtd = 0;
+        foreach (var id in parcelaIds.Distinct())
+        {
+            var parcela = conta.ObterParcela(id);
+            if (parcela is null) return null;
+            var calc = parcela.Calcular(hoje, juros, multa);
+            saldoPrincipal += calc.SaldoPrincipal;
+            somaJuros += calc.Juros;
+            somaMulta += calc.Multa;
+            qtd++;
+        }
+
+        var saldoAtualizado = incluirEncargos ? saldoPrincipal + somaJuros + somaMulta : saldoPrincipal;
+        return new SugestaoRenegociacaoDto(saldoPrincipal, somaJuros, somaMulta, saldoAtualizado, qtd);
+    }
+
     public async Task<IReadOnlyList<FormaPagamentoDto>> ListarFormasPagamento(string empresaId, FiltroFormasPagamento filtro, CancellationToken ct = default)
     {
         var lista = await formas.Listar(empresaId, filtro, ct);
@@ -116,14 +145,19 @@ public sealed class FinanceiroConsulta(
             parcelasDto.Add(new ParcelaDto(
                 p.Id, p.Numero, p.TotalParcelas, p.ValorOriginal, p.Vencimento, p.DataPrevistaRecebimento,
                 p.PercentualJurosOverride, p.TotalPago, calc.SaldoPrincipal, calc.Juros, calc.Multa,
-                calc.SaldoAtualizado, calc.DiasAtraso, calc.Status, p.Observacoes, recebimentos));
+                calc.SaldoAtualizado, calc.DiasAtraso, calc.Status, p.Observacoes, p.RenegociacaoId, recebimentos));
         }
+
+        var renegociacoes = conta.Renegociacoes
+            .OrderBy(r => r.Data).ThenBy(r => r.Id)
+            .Select(r => new RenegociacaoDto(r.Id, r.Data, r.ValorBase, r.Desconto, r.Entrada, r.ValorRenegociado, r.Observacoes))
+            .ToArray();
 
         return new ContaReceberDto(
             conta.Id, conta.ClienteId, clienteNome, conta.Descricao, conta.TipoOrigem,
             conta.DocumentoOrigem, conta.NumeroDocumento, conta.ValorTotal, conta.QuantidadeParcelas,
             conta.DataEmissao, conta.CategoriaFinanceira, conta.Observacoes,
-            totalRecebido, saldoTotal, SituacaoDe(statuses), parcelasDto);
+            totalRecebido, saldoTotal, SituacaoDe(statuses), parcelasDto, renegociacoes);
     }
 
     /// <summary>Situação geral da conta, derivada da situação das parcelas (precedência da regra de negócio).</summary>

@@ -69,6 +69,22 @@ public static class FinanceiroEndpoints
             return r.Sucesso ? Results.NoContent() : Results.BadRequest(new { erro = r.Erro });
         }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesFinanceiro.EditarContaReceber));
 
+        grupo.MapGet("/contas-receber/{id}/renegociacao/sugestao", async (
+            string id, IFinanceiroConsulta consulta, IContextoEmpresa empresa, CancellationToken ct,
+            string[]? parcelaIds, bool? incluirEncargos) =>
+        {
+            var sugestao = await consulta.SugerirRenegociacao(empresa.EmpresaId, id, parcelaIds ?? [], incluirEncargos ?? false, ct);
+            return sugestao is null ? Results.NotFound() : Results.Ok(sugestao);
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesFinanceiro.RenegociarContaReceber));
+
+        grupo.MapPost("/contas-receber/{id}/renegociar", async (
+            string id, RenegociacaoEntradaDto req, FinanceiroAppService svc,
+            IContextoEmpresa empresa, IContextoUsuario usuario, CancellationToken ct) =>
+        {
+            var r = await svc.Renegociar(empresa.EmpresaId, usuario.UsuarioId, id, req, ct);
+            return r.Sucesso ? Results.Ok(new { id = r.Valor }) : Results.BadRequest(new { erro = r.Erro });
+        }).RequireAuthorization(PoliticaAcesso.Funcionalidade(FuncionalidadesFinanceiro.RenegociarContaReceber));
+
         // ─────────────────────────────── Recebimentos ───────────────────────────────
 
         grupo.MapGet("/contas-receber/parcelas/{parcelaId}/sugestao", async (

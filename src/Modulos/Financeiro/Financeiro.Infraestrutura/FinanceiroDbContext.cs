@@ -16,6 +16,7 @@ public sealed class FinanceiroDbContext(DbContextOptions<FinanceiroDbContext> op
     public DbSet<ContaReceber> Contas => Set<ContaReceber>();
     public DbSet<Parcela> Parcelas => Set<Parcela>();
     public DbSet<Recebimento> Recebimentos => Set<Recebimento>();
+    public DbSet<Renegociacao> Renegociacoes => Set<Renegociacao>();
     public DbSet<FormaPagamento> FormasPagamento => Set<FormaPagamento>();
     public DbSet<ParametrosFinanceiros> Parametros => Set<ParametrosFinanceiros>();
 
@@ -44,6 +45,12 @@ public sealed class FinanceiroDbContext(DbContextOptions<FinanceiroDbContext> op
                 .HasForeignKey(pa => pa.ContaReceberId)
                 .OnDelete(DeleteBehavior.Cascade);
             e.Navigation(p => p.Parcelas).UsePropertyAccessMode(PropertyAccessMode.Field);
+
+            e.HasMany(p => p.Renegociacoes)
+                .WithOne()
+                .HasForeignKey(r => r.ContaReceberId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.Navigation(p => p.Renegociacoes).UsePropertyAccessMode(PropertyAccessMode.Field);
         });
 
         modelBuilder.Entity<Parcela>(e =>
@@ -56,8 +63,10 @@ public sealed class FinanceiroDbContext(DbContextOptions<FinanceiroDbContext> op
             e.Property(p => p.TotalPago).HasPrecision(18, 4);
             e.Property(p => p.PercentualJurosOverride).HasPrecision(9, 4);
             e.Property(p => p.Observacoes).HasMaxLength(500);
+            e.Property(p => p.RenegociacaoId).HasMaxLength(26);
             e.HasIndex(p => new { p.EmpresaId, p.ContaReceberId });
             e.HasIndex(p => new { p.EmpresaId, p.Vencimento });
+            e.HasIndex(p => new { p.EmpresaId, p.RenegociacaoId });
 
             e.HasMany(p => p.Recebimentos)
                 .WithOne()
@@ -81,6 +90,20 @@ public sealed class FinanceiroDbContext(DbContextOptions<FinanceiroDbContext> op
             e.Property(p => p.UsuarioId).HasMaxLength(26);
             e.Property(p => p.EstornoMotivo).HasMaxLength(300);
             e.HasIndex(p => new { p.EmpresaId, p.ParcelaId });
+        });
+
+        modelBuilder.Entity<Renegociacao>(e =>
+        {
+            e.ToTable("fin_renegociacoes");
+            e.ConfigurarEntidadeBase();
+            e.Property(p => p.ContaReceberId).HasMaxLength(26).IsRequired();
+            e.Property(p => p.ValorBase).HasPrecision(18, 4);
+            e.Property(p => p.Desconto).HasPrecision(18, 4);
+            e.Property(p => p.Entrada).HasPrecision(18, 4);
+            e.Property(p => p.ValorRenegociado).HasPrecision(18, 4);
+            e.Property(p => p.UsuarioId).HasMaxLength(26);
+            e.Property(p => p.Observacoes).HasMaxLength(1000);
+            e.HasIndex(p => new { p.EmpresaId, p.ContaReceberId });
         });
 
         modelBuilder.Entity<FormaPagamento>(e =>

@@ -51,7 +51,19 @@ export interface Parcela {
   diasAtraso: number
   status: StatusParcela
   observacoes: string | null
+  /** Vínculo com a renegociação (origem = renegociada; gerada = não). Nulo se nunca renegociada. */
+  renegociacaoId: string | null
   recebimentos: Recebimento[]
+}
+
+export interface Renegociacao {
+  id: string
+  data: string
+  valorBase: number
+  desconto: number
+  entrada: number
+  valorRenegociado: number
+  observacoes: string | null
 }
 
 export interface ContaReceber {
@@ -71,6 +83,7 @@ export interface ContaReceber {
   saldoTotal: number
   situacao: SituacaoConta
   parcelas: Parcela[]
+  renegociacoes: Renegociacao[]
 }
 
 export interface PaginaContas {
@@ -87,6 +100,14 @@ export interface SugestaoRecebimento {
   juros: number
   multa: number
   saldoAtualizado: number
+}
+
+export interface SugestaoRenegociacao {
+  saldoPrincipal: number
+  juros: number
+  multa: number
+  saldoAtualizado: number
+  qtdParcelas: number
 }
 
 export interface FormaPagamento {
@@ -154,5 +175,18 @@ export interface RecebimentoEntrada {
   juros?: number
   multa?: number
   acrescimos?: number
+  observacoes?: string | null
+}
+
+export interface RenegociacaoEntrada {
+  parcelaIds: string[]
+  primeiroVencimento: string
+  quantidadeParcelas: number
+  incluirEncargos?: boolean
+  desconto?: number
+  entrada?: number
+  entradaFormaPagamentoId?: string | null
+  intervaloDias?: number
+  parcelas?: ParcelaEntrada[] | null
   observacoes?: string | null
 }

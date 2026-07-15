@@ -7,7 +7,9 @@ import type {
   PaginaContas,
   Parametros,
   RecebimentoEntrada,
+  RenegociacaoEntrada,
   SugestaoRecebimento,
+  SugestaoRenegociacao,
 } from './tipos'
 
 /** Fetch autenticado exposto por `useAuth().requisitar` (bearer + refresh automático). */
@@ -46,6 +48,25 @@ export function atualizarCabecalho(req: Requisitar, id: string, dados: ContaCabe
 
 export function cancelarConta(req: Requisitar, id: string) {
   return req<void>(`/fin/contas-receber/${id}/cancelar`, { method: 'POST' })
+}
+
+// ─────────────────────────────── Renegociação ───────────────────────────────
+
+export function sugerirRenegociacao(
+  req: Requisitar,
+  contaId: string,
+  parcelaIds: string[],
+  incluirEncargos: boolean,
+  signal?: AbortSignal,
+) {
+  const p = new URLSearchParams()
+  parcelaIds.forEach((id) => p.append('parcelaIds', id))
+  p.set('incluirEncargos', String(incluirEncargos))
+  return req<SugestaoRenegociacao>(`/fin/contas-receber/${contaId}/renegociacao/sugestao?${p.toString()}`, { signal })
+}
+
+export function renegociar(req: Requisitar, contaId: string, dados: RenegociacaoEntrada) {
+  return req<{ id: string }>(`/fin/contas-receber/${contaId}/renegociar`, { method: 'POST', body: dados })
 }
 
 // ─────────────────────────────── Recebimentos ───────────────────────────────

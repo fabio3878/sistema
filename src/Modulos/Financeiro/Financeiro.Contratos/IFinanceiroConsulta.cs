@@ -17,6 +17,9 @@ public interface IFinanceiroConsulta
     /// <summary>Sugestão de valores (saldo + juros/multa de mora até hoje) para baixar uma parcela.</summary>
     Task<SugestaoRecebimentoDto?> SugerirRecebimento(string empresaId, string parcelaId, CancellationToken ct = default);
 
+    /// <summary>Consolidado (saldo + encargos até hoje) das parcelas selecionadas, para pré-preencher a renegociação.</summary>
+    Task<SugestaoRenegociacaoDto?> SugerirRenegociacao(string empresaId, string contaId, IReadOnlyList<string> parcelaIds, bool incluirEncargos, CancellationToken ct = default);
+
     Task<IReadOnlyList<FormaPagamentoDto>> ListarFormasPagamento(string empresaId, FiltroFormasPagamento filtro, CancellationToken ct = default);
     Task<FormaPagamentoDto?> ObterFormaPagamento(string empresaId, string formaId, CancellationToken ct = default);
 

@@ -88,6 +88,77 @@ public sealed class FinanceiroAppService(
         return Result.Ok();
     }
 
+    public async Task<Result<string>> Renegociar(
+        string empresaId, string? usuarioId, string contaId, RenegociacaoEntradaDto dados, CancellationToken ct = default)
+    {
+        if (dados.ParcelaIds is null || dados.ParcelaIds.Count == 0)
+            return Result<string>.Falha("Selecione ao menos uma parcela para renegociar.");
+
+        var conta = await contas.ObterPorId(empresaId, contaId, ct);
+        if (conta is null)
+            return Result<string>.Falha("Conta a receber não encontrada.");
+
+        // Entrada no ato vira recebimento — a forma precisa existir e estar ativa (valida antes de mutar).
+        FormaPagamento? formaEntrada = null;
+        if (dados.Entrada > 0)
+        {
+            if (string.IsNullOrWhiteSpace(dados.EntradaFormaPagamentoId))
+                return Result<string>.Falha("Informe a forma de pagamento da entrada.");
+            formaEntrada = await formas.ObterPorId(empresaId, dados.EntradaFormaPagamentoId, ct);
+            if (formaEntrada is null)
+                return Result<string>.Falha("Forma de pagamento da entrada não encontrada.");
+            if (!formaEntrada.Ativo)
+                return Result<string>.Falha("Forma de pagamento da entrada inativa.");
+        }
+
+        // Consolida a base das parcelas selecionadas: saldo principal, ou saldo atualizado (com encargos).
+        var hoje = DateOnly.FromDateTime(DateTime.UtcNow);
+        var param = await parametros.Obter(empresaId, ct);
+        var juros = param?.JurosMoraMensalPercent ?? 0m;
+        var multa = param?.MultaPercent ?? 0m;
+        var valorBase = 0m;
+        foreach (var parcelaId in dados.ParcelaIds.Distinct())
+        {
+            var parcela = conta.ObterParcela(parcelaId);
+            if (parcela is null)
+                return Result<string>.Falha("Parcela não encontrada nesta conta.");
+            var calc = parcela.Calcular(hoje, juros, multa);
+            valorBase += dados.IncluirEncargos ? calc.SaldoAtualizado : calc.SaldoPrincipal;
+        }
+
+        var valorRenegociado = valorBase - dados.Desconto - dados.Entrada;
+
+        // Plano: usa o informado (vencimentos/valores editados) ou gera parcelas iguais.
+        var novoPlano = (dados.Parcelas is { Count: > 0 })
+            ? dados.Parcelas
+                .OrderBy(p => p.Numero)
+                .Select(p => new PlanoParcela(p.Numero, dados.Parcelas.Count, p.Valor, p.Vencimento, p.DataPrevistaRecebimento, p.PercentualJurosOverride))
+                .ToArray()
+            : ContaReceber.GerarPlano(valorRenegociado, dados.QuantidadeParcelas, dados.PrimeiroVencimento, dados.IntervaloDias);
+
+        var info = new DadosRenegociacao(valorBase, dados.Desconto, dados.Entrada, hoje, usuarioId, dados.Observacoes);
+        var resultado = conta.Renegociar(dados.ParcelaIds, novoPlano, info);
+        if (resultado.Falhou)
+            return Result<string>.Falha(resultado.Erro!);
+        var reneg = resultado.Valor!;
+
+        // Entrada paga no ato: recebimento na 1ª parcela gerada por esta renegociação.
+        if (dados.Entrada > 0)
+        {
+            var primeiraGerada = conta.Parcelas
+                .Where(p => p.RenegociacaoId == reneg.Id && !p.Renegociada)
+                .OrderBy(p => p.Numero)
+                .First();
+            var recebimento = new DadosRecebimento(hoje, dados.Entrada, dados.EntradaFormaPagamentoId!, Observacoes: "Entrada da renegociação", UsuarioId: usuarioId);
+            var baixa = conta.RegistrarRecebimento(primeiraGerada.Id, recebimento);
+            if (baixa.Falhou)
+                return Result<string>.Falha(baixa.Erro!);
+        }
+
+        await uow.Salvar(ct);
+        return Result<string>.Ok(reneg.Id);
+    }
+
     // ─────────────────────────────── Recebimentos ───────────────────────────────
 
     public async Task<Result<string>> RegistrarRecebimento(

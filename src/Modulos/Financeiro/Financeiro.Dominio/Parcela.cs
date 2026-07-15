@@ -28,6 +28,14 @@ public sealed class Parcela : EntidadeBase
 
     public bool Cancelada { get; private set; }
     public bool Renegociada { get; private set; }
+
+    /// <summary>
+    /// Vínculo com a <see cref="Renegociacao"/> desta parcela (nulo se nunca renegociada). Distingue os
+    /// dois papéis: parcela <b>origem</b> tem <see cref="Renegociada"/>=true; parcela <b>gerada</b> tem
+    /// <see cref="Renegociada"/>=false. Ambas apontam para o mesmo id de renegociação.
+    /// </summary>
+    public string? RenegociacaoId { get; private set; }
+
     public string? Observacoes { get; private set; }
 
     public IReadOnlyCollection<Recebimento> Recebimentos => _recebimentos.AsReadOnly();
@@ -129,6 +137,29 @@ public sealed class Parcela : EntidadeBase
         MarcarAtualizado();
         return Result.Ok();
     }
+
+    /// <summary>
+    /// Fecha esta parcela por renegociação: o saldo remanescente foi consolidado numa nova
+    /// renegociação. Só parcela viva com saldo em aberto pode ser renegociada (pagamento parcial é ok —
+    /// renegocia-se o saldo). Depois disso ela não recebe nem é alterada (ver guardas em RegistrarRecebimento/AlterarDados).
+    /// </summary>
+    internal Result MarcarRenegociada(string renegociacaoId)
+    {
+        if (Cancelada)
+            return Result.Falha("Parcela cancelada não pode ser renegociada.");
+        if (Renegociada)
+            return Result.Falha("Parcela já foi renegociada.");
+        if (SaldoPrincipal <= 0)
+            return Result.Falha("Parcela quitada não pode ser renegociada.");
+
+        Renegociada = true;
+        RenegociacaoId = renegociacaoId;
+        MarcarAtualizado();
+        return Result.Ok();
+    }
+
+    /// <summary>Vincula uma parcela recém-gerada à renegociação que a originou (papel "gerada": Renegociada=false).</summary>
+    internal void VincularComoGerada(string renegociacaoId) => RenegociacaoId = renegociacaoId;
 
     /// <summary>
     /// Cálculo derivado (na leitura): saldo, dias em atraso, juros/multa de mora até <paramref name="hoje"/>,

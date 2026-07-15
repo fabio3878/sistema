@@ -107,6 +107,28 @@ public sealed class FinanceiroConsultaTests
     }
 
     [Fact]
+    public async Task Renegociacao_persiste_e_situacao_ignora_parcelas_renegociadas()
+    {
+        using var ctx = await NovoContexto();
+        var conta = ContaUmaParcela("CLI_1", new DateOnly(2026, 1, 1), 1000m, Futuro);
+        var origem = conta.Parcelas.Single();
+        var reneg = conta.Renegociar([origem.Id], ContaReceber.GerarPlano(1000m, 2, Futuro), new DadosRenegociacao(1000m, 0, 0, new DateOnly(2026, 1, 10)));
+        Assert.True(reneg.Sucesso, reneg.Erro);
+        await ctx.Contas.AddAsync(conta);
+        await ctx.SaveChangesAsync();
+
+        var dto = Assert.Single((await Consulta(ctx).ListarContas(Emp, new FiltroContasReceber())).Itens);
+
+        Assert.Equal(3, dto.Parcelas.Count); // 1 origem renegociada + 2 geradas
+        Assert.Contains(dto.Parcelas, p => p.Status == StatusParcela.Renegociada);
+        Assert.Equal(2, dto.Parcelas.Count(p => p.RenegociacaoId == reneg.Valor!.Id && p.Status != StatusParcela.Renegociada));
+        Assert.Equal(1000m, dto.SaldoTotal); // renegociada contribui 0; só o novo plano conta
+        Assert.Equal(SituacaoConta.EmAberto, dto.Situacao);
+        Assert.Single(dto.Renegociacoes);
+        Assert.Equal(1000m, dto.Renegociacoes[0].ValorRenegociado);
+    }
+
+    [Fact]
     public async Task Filtra_por_cliente_isola()
     {
         using var ctx = await NovoContexto();
